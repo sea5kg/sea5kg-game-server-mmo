@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админ-панель | Редактор комнат</title>
+  <style>
+    * { box-sizing: border-box; font-family: system-ui, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    body { background: #0f172a; color: #e2e8f0; }
+
+    .app {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      grid-template-rows: 56px 1fr;
+      grid-template-areas:
+        "sidebar header"
+        "sidebar editor";
+      height: 100vh;
+      width: 100vw;
+    }
+
+    .header {
+      grid-area: header;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      gap: 16px;
+    }
+    .header-left { display: flex; align-items: center; gap: 16px; min-width: 0; }
+    .header-title { font-size: 1rem; font-weight: 600; color: #f1f5f9; white-space: nowrap; }
+    .header-title span { color: #64748b; font-weight: 400; margin-left: 8px; }
+    .header-actions { display: flex; gap: 8px; align-items: center; }
+
+    .sidebar {
+      grid-area: sidebar;
+      background: #0b1220;
+      border-right: 1px solid #334155;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .sidebar-header {
+      padding: 16px 18px 12px;
+      border-bottom: 1px solid #1e293b;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .sidebar-header h1 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #f1f5f9;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sidebar-header .count {
+      background: #1e293b;
+      color: #94a3b8;
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+    .sidebar-search { padding: 10px 14px; border-bottom: 1px solid #1e293b; }
+    .sidebar-search input {
+      width: 100%;
+      padding: 8px 12px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      color: #e2e8f0;
+      font-size: 0.85rem;
+      outline: none;
+      transition: border 0.15s;
+    }
+    .sidebar-search input:focus { border-color: #3b82f6; }
+    .sidebar-search input::placeholder { color: #64748b; }
+
+    .room-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .room-list::-webkit-scrollbar { width: 8px; }
+    .room-list::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    .room-list::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+    .room-item {
+      padding: 10px 12px;
+      background: #1e293b;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.12s;
+      border: 1px solid transparent;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .room-item:hover { background: #334155; }
+    .room-item.active {
+      background: #1e3a8a;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 1px rgba(59,130,246,0.3);
+    }
+    .room-item .icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: #0f172a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .room-item.active .icon { background: #1e40af; }
+    .room-item .info { flex: 1; min-width: 0; }
+    .room-item .name {
+      font-weight: 500;
+      font-size: 0.85rem;
+      color: #f1f5f9;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .room-item .meta { font-size: 0.7rem; color: #94a3b8; margin-top: 2px; }
+    .room-item .delete-btn {
+      opacity: 0;
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      transition: opacity 0.15s, background 0.15s, color 0.15s;
+      flex-shrink: 0;
+    }
+    .room-item:hover .delete-btn { opacity: 1; }
+    .room-item .delete-btn:hover { background: #dc2626; color: white; }
+
+    .sidebar-footer { padding: 12px; border-top: 1px solid #1e293b; }
+
+    .editor {
+      grid-area: editor;
+      display: flex;
+      flex-direction: column;
+      background: #0f172a;
+      overflow: hidden;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      flex-wrap: wrap;
+    }
+    .toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: #0f172a;
+      padding: 3px;
+      border-radius: 10px;
+      border: 1px solid #334155;
+    }
+    .tool-btn {
+      background: transparent;
+      border: none;
+      color: #cbd5e1;
+      padding: 6px 12px;
+      border-radius: 7px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.12s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+    }
+    .tool-btn:hover { background: #1e293b; color: #f1f5f9; }
+    .tool-btn.active { background: #3b82f6; color: white; }
+
+    .toolbar-divider { width: 1px; height: 24px; background: #334155; }
+
+    .btn {
+      background: #3b82f6;
+      border: none;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-weight: 500;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .btn:hover { background: #2563eb; }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-secondary { background: #334155; color: #e2e8f0; }
+    .btn-secondary:hover { background: #475569; }
+    .btn-success { background: #059669; }
+    .btn-success:hover { background: #047857; }
+    .btn-sm { padding: 6px 10px; font-size: 0.78rem; }
+    .btn-block { width: 100%; justify-content: center; }
+
+    .workspace {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      overflow: hidden;
+    }
+
+    .inspector {
+      background: #1e293b;
+      border-right: 1px solid #334155;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .inspector::-webkit-scrollbar { width: 8px; }
+    .inspector::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+
+    .inspector-section {
+      background: #0f172a;
+      border-radius: 12px;
+      padding: 14px;
+      border: 1px solid #334155;
+    }
+    .inspector-title {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #64748b;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .field-row.single { grid-template-columns: 1fr; }
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    .field label { font-size: 0.72rem; font-weight: 500; color: #94a3b8; }
+    .field input, .field select {
+      padding: 8px 10px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: #f1f5f9;
+      font-size: 0.85rem;
+      outline: none;
+      transition: border 0.15s, box-shadow 0.15s;
+      width: 100%;
+      font-variant-numeric: tabular-nums;
+    }
+    .field input:focus, .field select:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+    }
+    .field input:disabled { opacity: 0.5; }
+
+    .preset-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .chip {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #cbd5e1;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      cursor: pointer;
+      transition: all 0.12s;
+      font-variant-numeric: tabular-nums;
+    }
+    .chip:hover { background: #334155; border-color: #475569; color: #f1f5f9; }
+    .chip.active { background: #3b82f6; border-color: #3b82f6; color: white; }
+
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
+    .stat {
+      background: #1e293b;
+      border-radius: 8px;
+      padding: 8px 10px;
+      border: 1px solid #334155;
+    }
+    .stat .label { font-size: 0.65rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat .value { font-size: 1rem; font-weight: 600; color: #f1f5f9; margin-top: 2px; font-variant-numeric: tabular-nums; }
+    .stat .value.walls { color: #f59e0b; }
+    .stat .value.floor { color: #38bdf8; }
+
+    .canvas-area {
+      position: relative;
+      overflow: auto;
+      background: #0f172a;
+      background-image:
+        linear-gradient(rgba(51,65,85,0.3) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(51,65,85,0.3) 1px, transparent 1px);
+      background-size: 20px 20px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 24px;
+    }
+    .canvas-area::-webkit-scrollbar { width: 10px; height: 10px; }
+    .canvas-area::-webkit-scrollbar-thumb { background: #334155; border-radius: 5px; }
+
+    .canvas-container {
+      position: relative;
+      background: #1e293b;
+      padding: 8px;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      border: 1px solid #334155;
+    }
+
+    #roomCanvas {
+      display: block;
+      cursor: crosshair;
+      border-radius: 6px;
+      background: #0b1220;
+      image-rendering: pixelated;
+      /* Отключаем выделение при drag */
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+    }
+    /* Курсор при активном рисовании */
+    #roomCanvas.drawing { cursor: crosshair; }
+    #roomCanvas.erasing { cursor: cell; }
+
+    .coord-hint {
+      position: absolute;
+      background: #3b82f6;
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
+      pointer-events: none;
+      z-index: 100;
+      transform: translate(10px, 10px);
+      display: none;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .coord-hint.drawing { background: #059669; }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.85);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s, visibility 0.2s;
+    }
+    .modal-overlay.visible { opacity: 1; visibility: visible; }
+    .modal {
+      background: #1e293b;
+      border-radius: 20px;
+      padding: 32px 36px;
+      width: 380px;
+      max-width: 90%;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+      border: 1px solid #334155;
+      transform: translateY(10px);
+      transition: transform 0.25s;
+    }
+    .modal-overlay.visible .modal { transform: translateY(0); }
+    .modal h2 { font-size: 1.5rem; font-weight: 700; color: #f1f5f9; margin-bottom: 6px; }
+    .modal p { color: #94a3b8; font-size: 0.85rem; margin-bottom: 22px; }
+    .modal .field { margin-bottom: 16px; }
+    .modal .field label { color: #cbd5e1; font-size: 0.8rem; }
+    .modal .field input { padding: 12px 14px; background: #0f172a; border-radius: 12px; font-size: 0.95rem; }
+    .modal .btn { padding: 13px 20px; font-size: 0.95rem; border-radius: 12px; width: 100%; margin-top: 6px; }
+    .modal .error-msg { color: #f87171; font-size: 0.82rem; margin-top: 10px; min-height: 18px; text-align: center; }
+
+    .toast-container {
+      position: fixed;
+      top: 70px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 2000;
+      pointer-events: none;
+    }
+    .toast {
+      background: #1e293b;
+      color: #f1f5f9;
+      padding: 12px 18px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      border: 1px solid #334155;
+      animation: slideIn 0.25s ease;
+      min-width: 220px;
+      max-width: 360px;
+      border-left: 3px solid #3b82f6;
+      pointer-events: auto;
+    }
+    .toast.success { border-left-color: #10b981; }
+    .toast.error { border-left-color: #ef4444; }
+    .toast.info { border-left-color: #3b82f6; }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    .spinner-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15,23,42,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      backdrop-filter: blur(2px);
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #334155;
+      border-top-color: #3b82f6;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .hidden { display: none !important; }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #64748b;
+      gap: 12px;
+      padding: 40px;
+      text-align: center;
+    }
+    .empty-state .icon { font-size: 3rem; opacity: 0.5; }
+    .empty-state p { font-size: 0.9rem; }
+
+    @media (max-width: 900px) {
+      .workspace { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+      .inspector { max-height: 220px; border-right: none; border-bottom: 1px solid #334155; }
+    }
+    @media (max-width: 700px) {
+      .app { grid-template-columns: 240px 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="appContainer" style="display: none;">
+
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h1>🏗️ Комнаты <span class="count" id="roomCount">0</span></h1>
+      </div>
+      <div class="sidebar-search">
+        <input type="text" id="roomSearch" placeholder="🔍 Поиск комнаты...">
+      </div>
+      <div class="room-list" id="roomList"></div>
+      <div class="sidebar-footer">
+        <button class="btn btn-block" id="createRoomBtn">➕ Новая комната</button>
+      </div>
+    </aside>
+
+    <header class="header">
+      <div class="header-left">
+        <div class="header-title">
+          Редактор <span id="headerRoomName">— комната не выбрана</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-secondary btn-sm" id="logoutBtn">🚪 Выйти</button>
+      </div>
+    </header>
+
+    <main class="editor">
+      <div class="toolbar">
+        <div class="toolbar-group">
+          <button class="tool-btn active" data-tool="wall">🧱 Стена</button>
+          <button class="tool-btn" data-tool="floor">⬜ Пол</button>
+          <button class="tool-btn" data-tool="erase">🧽 Ластик</button>
+        </div>
+        <div class="toolbar-divider"></div>
+        <button class="btn btn-secondary btn-sm" id="clearRoomBtn">🗑️ Очистить</button>
+        <button class="btn btn-secondary btn-sm" id="fillRoomBtn">▦ Заполнить</button>
+        <div class="toolbar-divider"></div>
+        <button class="btn btn-success btn-sm" id="saveRoomBtn">💾 Сохранить</button>
+      </div>
+
+      <div class="workspace">
+        <aside class="inspector">
+          <div class="inspector-section">
+            <div class="inspector-title">⚙️ Параметры комнаты</div>
+            <div class="field field-row single" style="margin-bottom: 10px;">
+              <label>Название</label>
+              <input type="text" id="roomNameInput" placeholder="Название комнаты">
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label>Ширина (клеток)</label>
+                <input type="number" id="roomWidthInput" min="3" max="100" value="15">
+              </div>
+              <div class="field">
+                <label>Высота (клеток)</label>
+                <input type="number" id="roomHeightInput" min="3" max="100" value="10">
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label>Начало X</label>
+                <input type="number" id="roomStartX" min="0" value="0" disabled>
+              </div>
+              <div class="field">
+                <label>Начало Y</label>
+                <input type="number" id="roomStartY" min="0" value="0" disabled>
+              </div>
+            </div>
+
+            <div style="margin-top: 10px;">
+              <label style="font-size:0.72rem; color:#94a3b8; font-weight:500;">Быстрые размеры:</label>
+              <div class="preset-chips" id="presetChips">
+                <span class="chip" data-w="8" data-h="6">8×6</span>
+                <span class="chip active" data-w="15" data-h="10">15×10</span>
+                <span class="chip" data-w="20" data-h="15">20×15</span>
+                <span class="chip" data-w="30" data-h="20">30×20</span>
+              </div>
+            </div>
+
+            <button class="btn btn-block" id="applySizeBtn" style="margin-top: 14px;">📐 Применить размеры</button>
+          </div>
+
+          <div class="inspector-section">
+            <div class="inspector-title">📊 Статистика</div>
+            <div class="stats">
+              <div class="stat">
+                <div class="label">Клеток всего</div>
+                <div class="value" id="statTotal">0</div>
+              </div>
+              <div class="stat">
+                <div class="label">Стен</div>
+                <div class="value walls" id="statWalls">0</div>
+              </div>
+              <div class="stat">
+                <div class="label">Пол</div>
+                <div class="value floor" id="statFloor">0</div>
+              </div>
+              <div class="stat">
+                <div class="label">Заполнено</div>
+                <div class="value" id="statPercent">0%</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="inspector-section">
+            <div class="inspector-title">🎯 Координаты клетки</div>
+            <div class="field-row">
+              <div class="field">
+                <label>X (столбец)</label>
+                <input type="number" id="cellX" min="0" value="0" disabled>
+              </div>
+              <div class="field">
+                <label>Y (строка)</label>
+                <input type="number" id="cellY" min="0" value="0" disabled>
+              </div>
+            </div>
+            <div class="field single">
+              <label>Тип клетки</label>
+              <input type="text" id="cellType" value="—" disabled>
+            </div>
+            <div style="font-size: 0.72rem; color:#64748b; margin-top: 10px;">
+              💡 Зажмите ЛКМ и ведите, чтобы рисовать линию
+            </div>
+          </div>
+        </aside>
+
+        <div class="canvas-area" id="canvasArea">
+          <div class="canvas-container">
+            <canvas id="roomCanvas" width="600" height="400"></canvas>
+            <div class="coord-hint" id="coordHint">0, 0</div>
+          </div>
+
+          <div class="empty-state hidden" id="emptyState">
+            <div class="icon">🏗️</div>
+            <p>Нет выбранной комнаты</p>
+            <button class="btn" onclick="document.getElementById('createRoomBtn').click()">➕ Создать первую комнату</button>
+          </div>
+
+          <div id="canvasSpinner" class="spinner-overlay hidden">
+            <div class="spinner"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal">
+      <h2>Вход в панель</h2>
+      <p>Введите учётные данные администратора</p>
+      <div class="field">
+        <label>Логин</label>
+        <input type="text" id="loginUsername" placeholder="admin" value="admin">
+      </div>
+      <div class="field">
+        <label>Пароль</label>
+        <input type="password" id="loginPassword" placeholder="••••••••" value="admin123">
+      </div>
+      <button class="btn" id="loginBtn">Войти</button>
+      <div class="error-msg" id="loginError"></div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+  /* =======================================================================
+   * API-СЛОЙ
+   * ======================================================================= */
+
+  const API_CONFIG = { baseUrl: '/api', useMock: true };
+
+  /* ---------- РЕАЛЬНАЯ РЕАЛИЗАЦИЯ (для справки)
+  const RoomAPI = {
+    async login(u, p) { ... },
+    async logout() { ... },
+    async getRooms() { ... },
+    async createRoom(room) { ... },
+    async updateRoom(id, room) { ... },
+    async deleteRoom(id) { ... },
+  };
+  ------------------------------------------------------------- */
+
+  const MockStorage = {
+    _rooms: null,
+    _load() {
+      if (this._rooms) return this._rooms;
+      try {
+        const s = localStorage.getItem('game_rooms');
+        this._rooms = s ? JSON.parse(s) : null;
+      } catch (e) { this._rooms = null; }
+      return this._rooms;
+    },
+    _save() {
+      try { localStorage.setItem('game_rooms', JSON.stringify(this._rooms)); } catch (e) {}
+    },
+    _defaults() {
+      const make = (name, w, h) => {
+        const cells = Array.from({ length: h }, () => Array(w).fill(0));
+        for (let x = 0; x < w; x++) { cells[0][x] = 1; cells[h-1][x] = 1; }
+        for (let y = 0; y < h; y++) { cells[y][0] = 1; cells[y][w-1] = 1; }
+        return { id: 'room_' + Math.random().toString(36).slice(2, 9), name, width: w, height: h, cells };
+      };
+      return [ make('Гостиная', 12, 8), make('Кухня', 10, 6), make('Подземелье', 20, 15) ];
+    },
+    get() {
+      let r = this._load();
+      if (!r) { r = this._defaults(); this._rooms = r; this._save(); }
+      return JSON.parse(JSON.stringify(r));
+    },
+    set(r) { this._rooms = JSON.parse(JSON.stringify(r)); this._save(); },
+  };
+
+  const delay = ms => new Promise(res => setTimeout(res, ms));
+
+  const RoomAPI = {
+    async login(u, p) {
+      await delay(350);
+      if (u === 'admin' && p === 'admin123') {
+        localStorage.setItem('mock_token', 'mock_' + Date.now());
+        return { token: 'mock' };
+      }
+      throw new Error('Неверный логин или пароль');
+    },
+    async logout() { await delay(120); localStorage.removeItem('mock_token'); },
+    async getRooms() { await delay(250); return MockStorage.get(); },
+    async createRoom(room) {
+      await delay(250);
+      const rooms = MockStorage.get();
+      const newRoom = { ...room, id: 'room_' + Math.random().toString(36).slice(2, 9) };
+      rooms.push(newRoom);
+      MockStorage.set(rooms);
+      return newRoom;
+    },
+    async updateRoom(id, room) {
+      await delay(250);
+      const rooms = MockStorage.get();
+      const i = rooms.findIndex(r => r.id === id);
+      if (i === -1) throw new Error('Комната не найдена');
+      rooms[i] = { ...rooms[i], ...room, id };
+      MockStorage.set(rooms);
+      return rooms[i];
+    },
+    async deleteRoom(id) {
+      await delay(200);
+      MockStorage.set(MockStorage.get().filter(r => r.id !== id));
+    },
+  };
+
+  /* =======================================================================
+   * СОСТОЯНИЕ И ЛОГИКА
+   * ======================================================================= */
+
+  let rooms = [];
+  let currentRoomId = null;
+  let currentTool = 'wall';
+  let isBusy = false;
+  let canvas, ctx;
+  let hoverCell = { x: -1, y: -1 };
+  let searchQuery = '';
+
+  // === DRAG-РИСОВАНИЕ ===
+  let isDrawing = false;
+  let lastPaintedCell = { x: -1, y: -1 };  // защита от повторной обработки той же клетки
+  let hasUnsavedChanges = false;            // для предупреждения при переключении
+  let paintedCellsCount = 0;                // сколько клеток изменено в текущем drag
+
+  const $ = id => document.getElementById(id);
+  const loginModal = $('loginModal');
+  const appContainer = $('appContainer');
+  const loginBtn = $('loginBtn');
+  const logoutBtn = $('logoutBtn');
+  const loginError = $('loginError');
+  const usernameInput = $('loginUsername');
+  const passwordInput = $('loginPassword');
+  const roomListEl = $('roomList');
+  const roomCountEl = $('roomCount');
+  const roomSearchInput = $('roomSearch');
+  const createRoomBtn = $('createRoomBtn');
+  const roomNameInput = $('roomNameInput');
+  const roomWidthInput = $('roomWidthInput');
+  const roomHeightInput = $('roomHeightInput');
+  const applySizeBtn = $('applySizeBtn');
+  const presetChips = $('presetChips');
+  const clearRoomBtn = $('clearRoomBtn');
+  const fillRoomBtn = $('fillRoomBtn');
+  const saveRoomBtn = $('saveRoomBtn');
+  const headerRoomName = $('headerRoomName');
+  const toolButtons = document.querySelectorAll('.tool-btn');
+  const canvasSpinner = $('canvasSpinner');
+  const toastContainer = $('toastContainer');
+  const emptyState = $('emptyState');
+  const coordHint = $('coordHint');
+  const statTotal = $('statTotal');
+  const statWalls = $('statWalls');
+  const statFloor = $('statFloor');
+  const statPercent = $('statPercent');
+  const cellX = $('cellX');
+  const cellY = $('cellY');
+  const cellType = $('cellType');
+
+  canvas = $('roomCanvas');
+  ctx = canvas.getContext('2d');
+
+  // ----- Утилиты -----
+  function toast(msg, type = 'info') {
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.textContent = msg;
+    toastContainer.appendChild(el);
+    setTimeout(() => {
+      el.style.transition = 'opacity 0.3s, transform 0.3s';
+      el.style.opacity = '0';
+      el.style.transform = 'translateX(100%)';
+      setTimeout(() => el.remove(), 300);
+    }, 2600);
+  }
+
+  function setBusy(state) {
+    isBusy = state;
+    canvasSpinner.classList.toggle('hidden', !state);
+    [createRoomBtn, saveRoomBtn, clearRoomBtn, fillRoomBtn, applySizeBtn, logoutBtn]
+      .forEach(b => { if (b) b.disabled = state; });
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+  }
+
+  function markUnsaved() {
+    hasUnsavedChanges = true;
+    if (!saveRoomBtn.textContent.includes('*')) {
+      saveRoomBtn.textContent = '💾 Сохранить *';
+    }
+  }
+
+  function markSaved() {
+    hasUnsavedChanges = false;
+    saveRoomBtn.textContent = '💾 Сохранить';
+  }
+
+  // ----- Рендеринг списка комнат -----
+  function renderRoomList() {
+    const filtered = rooms.filter(r =>
+      r.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    roomCountEl.textContent = rooms.length;
+
+    if (!filtered.length) {
+      roomListEl.innerHTML = `<div style="padding:20px;text-align:center;color:#64748b;font-size:0.8rem;">
+        ${rooms.length ? 'Ничего не найдено' : 'Нет комнат'}
+      </div>`;
+      return;
+    }
+
+    roomListEl.innerHTML = filtered.map(room => `
+      <div class="room-item ${room.id === currentRoomId ? 'active' : ''}" data-room-id="${room.id}">
+        <div class="icon">🏠</div>
+        <div class="info">
+          <div class="name">${escapeHtml(room.name)}</div>
+          <div class="meta">${room.width}×${room.height} · ${countWalls(room)} стен</div>
+        </div>
+        <button class="delete-btn" data-delete="${room.id}" title="Удалить">🗑️</button>
+      </div>
+    `).join('');
+
+    roomListEl.querySelectorAll('.room-item').forEach(el => {
+      el.addEventListener('click', (e) => {
+        if (e.target.closest('.delete-btn')) return;
+        if (isBusy || isDrawing) return;
+        const id = el.dataset.roomId;
+        if (id && id !== currentRoomId) selectRoom(id);
+      });
+    });
+
+    roomListEl.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.delete;
+        if (id) deleteRoom(id);
+      });
+    });
+  }
+
+  function countWalls(room) {
+    let c = 0;
+    for (let y = 0; y < room.height; y++)
+      for (let x = 0; x < room.width; x++)
+        if (room.cells[y][x] === 1) c++;
+    return c;
+  }
+
+  function selectRoom(id) {
+    const room = rooms.find(r => r.id === id);
+    if (!room) return;
+    currentRoomId = id;
+
+    roomNameInput.value = room.name;
+    roomWidthInput.value = room.width;
+    roomHeightInput.value = room.height;
+    headerRoomName.textContent = `${room.name} · ${room.width}×${room.height}`;
+
+    renderRoomList();
+    resizeCanvasToRoom(room);
+    drawRoom(room);
+    updateStats(room);
+    emptyState.classList.add('hidden');
+    markSaved();
+  }
+
+  // ----- Canvas -----
+  function resizeCanvasToRoom(room) {
+    const maxW = 900, maxH = 700;
+    const cellSize = Math.max(10, Math.min(
+      Math.floor(maxW / room.width),
+      Math.floor(maxH / room.height),
+      40
+    ));
+    canvas.width = room.width * cellSize;
+    canvas.height = room.height * cellSize;
+    canvas.dataset.cellSize = cellSize;
+  }
+
+  function drawRoom(room) {
+    if (!room) { ctx.clearRect(0, 0, canvas.width, canvas.height); return; }
+    const cs = parseInt(canvas.dataset.cellSize) || 30;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (let y = 0; y < room.height; y++) {
+      for (let x = 0; x < room.width; x++) {
+        const cell = room.cells[y][x];
+        const px = x * cs, py = y * cs;
+
+        if (cell === 1) {
+          ctx.fillStyle = '#475569';
+          ctx.fillRect(px, py, cs, cs);
+          ctx.strokeStyle = '#1e293b';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(px + 0.5, py + 0.5, cs - 1, cs - 1);
+          if (cs >= 16) {
+            ctx.fillStyle = 'rgba(255,255,255,0.06)';
+            ctx.fillRect(px + 1, py + 1, cs - 2, Math.max(2, cs * 0.15));
+          }
+        } else {
+          ctx.fillStyle = '#1e293b';
+          ctx.fillRect(px, py, cs, cs);
+          ctx.strokeStyle = '#334155';
+          ctx.lineWidth = 0.5;
+          ctx.strokeRect(px + 0.5, py + 0.5, cs - 1, cs - 1);
+        }
+      }
+    }
+
+    // Подсветка клетки под курсором
+    if (hoverCell.x >= 0 && hoverCell.x < room.width && hoverCell.y >= 0 && hoverCell.y < room.height) {
+      // При рисовании — зелёная подсветка, иначе синяя
+      const color = isDrawing ? '#10b981' : '#3b82f6';
+      const alpha = isDrawing ? 0.25 : 0.15;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(hoverCell.x * cs + 1, hoverCell.y * cs + 1, cs - 2, cs - 2);
+      ctx.fillStyle = hexToRgba(color, alpha);
+      ctx.fillRect(hoverCell.x * cs + 1, hoverCell.y * cs + 1, cs - 2, cs - 2);
+    }
+  }
+
+  function hexToRgba(hex, a) {
+    const n = parseInt(hex.slice(1), 16);
+    return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
+  }
+
+  function updateStats(room) {
+    const total = room.width * room.height;
+    let walls = 0;
+    for (let y = 0; y < room.height; y++)
+      for (let x = 0; x < room.width; x++)
+        if (room.cells[y][x] === 1) walls++;
+    statTotal.textContent = total;
+    statWalls.textContent = walls;
+    statFloor.textContent = total - walls;
+    statPercent.textContent = Math.round((walls / total) * 100) + '%';
+  }
+
+  function findRoom(id) { return rooms.find(r => r.id === id) || null; }
+
+  async function createRoom() {
+    const w = 15, h = 10;
+    const cells = Array.from({ length: h }, () => Array(w).fill(0));
+    const newRoom = { name: 'Комната ' + (rooms.length + 1), width: w, height: h, cells };
+    setBusy(true);
+    try {
+      const created = await RoomAPI.createRoom(newRoom);
+      rooms.push(created);
+      selectRoom(created.id);
+      renderRoomList();
+      toast('Комната создана', 'success');
+    } catch (e) { toast('Ошибка: ' + e.message, 'error'); }
+    finally { setBusy(false); }
+  }
+
+  async function deleteRoom(id) {
+    const room = findRoom(id);
+    if (!room) return;
+    if (!confirm(`Удалить комнату «${room.name}»?`)) return;
+    setBusy(true);
+    try {
+      await RoomAPI.deleteRoom(id);
+      rooms = rooms.filter(r => r.id !== id);
+      if (currentRoomId === id) {
+        currentRoomId = null;
+        if (rooms.length) selectRoom(rooms[0].id);
+        else {
+          emptyState.classList.remove('hidden');
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          headerRoomName.textContent = '— комната не выбрана';
+          roomNameInput.value = '';
+        }
+      }
+      renderRoomList();
+      toast('Комната удалена', 'info');
+    } catch (e) { toast('Ошибка: ' + e.message, 'error'); }
+    finally { setBusy(false); }
+  }
+
+  async function saveCurrentRoom() {
+    const room = findRoom(currentRoomId);
+    if (!room) return;
+    const updated = {
+      name: (roomNameInput.value || '').trim() || 'Без названия',
+      width: room.width,
+      height: room.height,
+      cells: room.cells,
+    };
+    setBusy(true);
+    try {
+      const saved = await RoomAPI.updateRoom(room.id, updated);
+      Object.assign(room, saved);
+      headerRoomName.textContent = `${saved.name} · ${saved.width}×${saved.height}`;
+      renderRoomList();
+      markSaved();
+      toast('Сохранено', 'success');
+    } catch (e) { toast('Ошибка: ' + e.message, 'error'); }
+    finally { setBusy(false); }
+  }
+
+  function applyRoomSize() {
+    const room = findRoom(currentRoomId);
+    if (!room) { toast('Сначала выберите комнату', 'error'); return; }
+
+    const newW = Math.min(100, Math.max(3, parseInt(roomWidthInput.value) || room.width));
+    const newH = Math.min(100, Math.max(3, parseInt(roomHeightInput.value) || room.height));
+
+    roomWidthInput.value = newW;
+    roomHeightInput.value = newH;
+
+    if (newW === room.width && newH === room.height) {
+      toast('Размеры не изменились', 'info');
+      return;
+    }
+
+    const newCells = [];
+    for (let y = 0; y < newH; y++) {
+      const row = [];
+      for (let x = 0; x < newW; x++) {
+        row.push((y < room.height && x < room.width) ? room.cells[y][x] : 0);
+      }
+      newCells.push(row);
+    }
+    room.cells = newCells;
+    room.width = newW;
+    room.height = newH;
+
+    resizeCanvasToRoom(room);
+    drawRoom(room);
+    updateStats(room);
+    headerRoomName.textContent = `${room.name} · ${room.width}×${room.height}`;
+    renderRoomList();
+    markUnsaved();
+    toast(`Размер изменён: ${newW}×${newH}`, 'info');
+  }
+
+  presetChips.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      presetChips.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      roomWidthInput.value = chip.dataset.w;
+      roomHeightInput.value = chip.dataset.h;
+    });
+  });
+
+  function clearCurrentRoom() {
+    const room = findRoom(currentRoomId);
+    if (!room) return;
+    for (let y = 0; y < room.height; y++)
+      for (let x = 0; x < room.width; x++) room.cells[y][x] = 0;
+    drawRoom(room);
+    updateStats(room);
+    renderRoomList();
+    markUnsaved();
+    toast('Сетка очищена (не забудьте сохранить)', 'info');
+  }
+
+  function fillCurrentRoom() {
+    const room = findRoom(currentRoomId);
+    if (!room) return;
+    for (let y = 0; y < room.height; y++)
+      for (let x = 0; x < room.width; x++) room.cells[y][x] = 1;
+    drawRoom(room);
+    updateStats(room);
+    renderRoomList();
+    markUnsaved();
+    toast('Всё заполнено стенами', 'info');
+  }
+
+  /* =======================================================================
+   * МЫШЬ ПО CANVAS (с drag-рисованием)
+   * ======================================================================= */
+
+  // Получить координаты клетки из события мыши
+  function getCellFromEvent(e) {
+    const rect = canvas.getBoundingClientRect();
+    const sx = canvas.width / rect.width;
+    const sy = canvas.height / rect.height;
+    const mx = (e.clientX - rect.left) * sx;
+    const my = (e.clientY - rect.top) * sy;
+    const cs = parseInt(canvas.dataset.cellSize) || 30;
+    return {
+      x: Math.floor(mx / cs),
+      y: Math.floor(my / cs),
+      cs,
+      // Дробные координаты для интерполяции
+      fx: mx / cs,
+      fy: my / cs
+    };
+  }
+
+  // Проверка: попали ли в пределы комнаты
+  function isInsideRoom(room, x, y) {
+    return x >= 0 && x < room.width && y >= 0 && y < room.height;
+  }
+
+  // Применить инструмент к одной клетке
+  function applyToolToCell(room, x, y) {
+    if (!isInsideRoom(room, x, y)) return false;
+    const currentValue = room.cells[y][x];
+    let newValue;
+    if (currentTool === 'wall') newValue = 1;
+    else newValue = 0; // floor и erase
+
+    if (currentValue === newValue) return false; // ничего не изменилось
+    room.cells[y][x] = newValue;
+    return true;
+  }
+
+  // Линия Брезенхэма для интерполяции между клетками при быстром движении
+  function lineBetween(x0, y0, x1, y1) {
+    const points = [];
+    let dx = Math.abs(x1 - x0);
+    let dy = Math.abs(y1 - y0);
+    let sx = x0 < x1 ? 1 : -1;
+    let sy = y0 < y1 ? 1 : -1;
+    let err = dx - dy;
+
+    while (true) {
+      points.push({ x: x0, y: y0 });
+      if (x0 === x1 && y0 === y1) break;
+      const e2 = 2 * err;
+      if (e2 > -dy) { err -= dy; x0 += sx; }
+      if (e2 < dx)  { err += dx; y0 += sy; }
+    }
+    return points;
+  }
+
+  // Начать рисование
+  function handleCanvasMouseDown(e) {
+    if (isBusy) return;
+    if (e.button !== 0) return; // только ЛКМ
+    const room = findRoom(currentRoomId);
+    if (!room) return;
+
+    const cell = getCellFromEvent(e);
+    if (!isInsideRoom(room, cell.x, cell.y)) return;
+
+    e.preventDefault();
+
+    isDrawing = true;
+    paintedCellsCount = 0;
+    lastPaintedCell = { x: -1, y: -1 };
+    canvas.classList.add(currentTool === 'erase' ? 'erasing' : 'drawing');
+    coordHint.classList.add('drawing');
+
+    // Обрабатываем первую клетку
+    if (applyToolToCell(room, cell.x, cell.y)) {
+      lastPaintedCell = { x: cell.x, y: cell.y };
+      paintedCellsCount++;
+      drawRoom(room);
+      updateStats(room);
+      markUnsaved();
+    }
+
+    // Захватываем указатель, чтобы не терять события при выходе за canvas
+    if (canvas.setPointerCapture && e.pointerId != null) {
+      try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+    }
+  }
+
+  // Процесс рисования (движение мыши)
+  function handleCanvasMouseMove(e) {
+    const room = findRoom(currentRoomId);
+    if (!room) return;
+
+    const cell = getCellFromEvent(e);
+
+    // Обновляем hover-подсветку в любом случае
+    if (isInsideRoom(room, cell.x, cell.y)) {
+      hoverCell = { x: cell.x, y: cell.y };
+      coordHint.textContent = `X: ${cell.x}  Y: ${cell.y}`;
+      coordHint.style.display = 'block';
+
+      const rect = canvas.getBoundingClientRect();
+      coordHint.style.left = (e.clientX - rect.left) + 'px';
+      coordHint.style.top = (e.clientY - rect.top) + 'px';
+
+      cellX.value = cell.x;
+      cellY.value = cell.y;
+      cellType.value = room.cells[cell.y][cell.x] === 1 ? '🧱 Стена' : '⬜ Пол';
+    } else {
+      hoverCell = { x: -1, y: -1 };
+      coordHint.style.display = 'none';
+      cellX.value = '—';
+      cellY.value = '—';
+      cellType.value = '—';
+    }
+
+    // Если рисуем — применяем инструмент
+    if (isDrawing) {
+      if (lastPaintedCell.x === -1) {
+        // Начали вне комнаты — пропускаем
+        if (isInsideRoom(room, cell.x, cell.y)) {
+          if (applyToolToCell(room, cell.x, cell.y)) {
+            lastPaintedCell = { x: cell.x, y: cell.y };
+            paintedCellsCount++;
+          }
+        }
+      } else {
+        // Интерполируем линию от последней точки до текущей
+        // (чтобы не было пропусков при быстром движении)
+        const points = lineBetween(
+          lastPaintedCell.x, lastPaintedCell.y,
+          cell.x, cell.y
+        );
+
+        let changed = false;
+        for (const p of points) {
+          if (applyToolToCell(room, p.x, p.y)) {
+            changed = true;
+            paintedCellsCount++;
+          }
+        }
+        lastPaintedCell = { x: cell.x, y: cell.y };
+
+        if (changed) {
+          updateStats(room);
+          markUnsaved();
+        }
+      }
+      drawRoom(room);
+    } else {
+      // Просто hover — обновляем подсветку
+      drawRoom(room);
+    }
+  }
+
+  // Завершить рисование
+  function handleCanvasMouseUp(e) {
+    if (!isDrawing) return;
+    isDrawing = false;
+    canvas.classList.remove('drawing', 'erasing');
+    coordHint.classList.remove('drawing');
+
+    // Освобождаем захват указателя
+    if (canvas.releasePointerCapture && e.pointerId != null) {
+      try { canvas.releasePointerCapture(e.pointerId); } catch (_) {}
+    }
+
+    // Обновляем список комнат (счётчик стен)
+    if (paintedCellsCount > 0) {
+      renderRoomList();
+    }
+
+    paintedCellsCount = 0;
+    lastPaintedCell = { x: -1, y: -1 };
+
+    const room = findRoom(currentRoomId);
+    if (room) drawRoom(room);
+  }
+
+  // Курсор ушёл с canvas
+  function handleCanvasMouseLeave() {
+    // Если не рисуем — убираем подсветку
+    if (!isDrawing) {
+      hoverCell = { x: -1, y: -1 };
+      coordHint.style.display = 'none';
+      cellX.value = '—';
+      cellY.value = '—';
+      cellType.value = '—';
+      const room = findRoom(currentRoomId);
+      if (room) drawRoom(room);
+    }
+  }
+
+  // На случай, если мышь отпущена вне canvas (без pointer capture)
+  function handleGlobalMouseUp() {
+    if (isDrawing) {
+      isDrawing = false;
+      canvas.classList.remove('drawing', 'erasing');
+      coordHint.classList.remove('drawing');
+      if (paintedCellsCount > 0) renderRoomList();
+      paintedCellsCount = 0;
+      lastPaintedCell = { x: -1, y: -1 };
+      const room = findRoom(currentRoomId);
+      if (room) drawRoom(room);
+    }
+  }
+
+  // Клик (fallback для touch/не-pointer устройств — оставляем как было)
+  function handleCanvasClick(e) {
+    if (isBusy || isDrawing) return;
+    const room = findRoom(currentRoomId);
+    if (!room) return;
+    const cell = getCellFromEvent(e);
+    if (!isInsideRoom(room, cell.x, cell.y)) return;
+
+    if (applyToolToCell(room, cell.x, cell.y)) {
+      drawRoom(room);
+      updateStats(room);
+      renderRoomList();
+      markUnsaved();
+      cellX.value = cell.x;
+      cellY.value = cell.y;
+      cellType.value = room.cells[cell.y][cell.x] === 1 ? '🧱 Стена' : '⬜ Пол';
+    }
+  }
+
+  /* =======================================================================
+   * АВТОРИЗАЦИЯ
+   * ======================================================================= */
+  async function performLogin() {
+    const u = usernameInput.value.trim();
+    const p = passwordInput.value.trim();
+    if (!u || !p) { loginError.textContent = 'Заполните оба поля'; return; }
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Вход...';
+    loginError.textContent = '';
+    try {
+      await RoomAPI.login(u, p);
+      loginModal.classList.remove('visible');
+      appContainer.style.display = 'grid';
+      await loadRooms();
+    } catch (e) {
+      loginError.textContent = e.message;
+    } finally {
+      loginBtn.disabled = false;
+      loginBtn.textContent = 'Войти';
+    }
+  }
+
+  async function performLogout() {
+    if (hasUnsavedChanges) {
+      if (!confirm('Есть несохранённые изменения. Выйти без сохранения?')) return;
+    }
+    try { await RoomAPI.logout(); } catch (e) {}
+    rooms = [];
+    currentRoomId = null;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    roomListEl.innerHTML = '';
+    headerRoomName.textContent = '— комната не выбрана';
+    appContainer.style.display = 'none';
+    loginModal.classList.add('visible');
+    markSaved();
+  }
+
+  async function loadRooms() {
+    setBusy(true);
+    try {
+      rooms = await RoomAPI.getRooms();
+      if (rooms.length) selectRoom(rooms[0].id);
+      else emptyState.classList.remove('hidden');
+      renderRoomList();
+    } catch (e) {
+      toast('Ошибка загрузки: ' + e.message, 'error');
+    } finally { setBusy(false); }
+  }
+
+  /* =======================================================================
+   * СЛУШАТЕЛИ
+   * ======================================================================= */
+  loginBtn.addEventListener('click', performLogin);
+  usernameInput.addEventListener('keypress', e => { if (e.key === 'Enter') performLogin(); });
+  passwordInput.addEventListener('keypress', e => { if (e.key === 'Enter') performLogin(); });
+  logoutBtn.addEventListener('click', performLogout);
+
+  createRoomBtn.addEventListener('click', createRoom);
+  saveRoomBtn.addEventListener('click', saveCurrentRoom);
+  clearRoomBtn.addEventListener('click', clearCurrentRoom);
+  fillRoomBtn.addEventListener('click', fillCurrentRoom);
+  applySizeBtn.addEventListener('click', applyRoomSize);
+
+  roomSearchInput.addEventListener('input', e => {
+    searchQuery = e.target.value;
+    renderRoomList();
+  });
+
+  [roomWidthInput, roomHeightInput].forEach(inp => {
+    inp.addEventListener('keypress', e => {
+      if (e.key === 'Enter') applyRoomSize();
+    });
+  });
+
+  toolButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      toolButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentTool = btn.dataset.tool;
+    });
+  });
+
+  // === Мышь по canvas ===
+  // Используем pointer events — они покрывают мышь, touch и stylus
+  canvas.addEventListener('pointerdown', handleCanvasMouseDown);
+  canvas.addEventListener('pointermove', handleCanvasMouseMove);
+  canvas.addEventListener('pointerup', handleCanvasMouseUp);
+  canvas.addEventListener('pointercancel', handleCanvasMouseUp);
+  canvas.addEventListener('pointerleave', handleCanvasMouseLeave);
+
+  // Fallback click (на случай очень быстрых кликов)
+  canvas.addEventListener('click', handleCanvasClick);
+
+  // Страховка: если мышь отпущена вне canvas
+  window.addEventListener('pointerup', handleGlobalMouseUp);
+
+  // Отключаем контекстное меню по ПКМ на холсте
+  canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+  // Предупреждение при закрытии с несохранёнными изменениями
+  window.addEventListener('beforeunload', (e) => {
+    if (hasUnsavedChanges) {
+      e.preventDefault();
+      e.returnValue = '';
+    }
+  });
+
+  // Горячие клавиши
+  document.addEventListener('keydown', (e) => {
+    // Ctrl+S / Cmd+S — сохранить
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+      e.preventDefault();
+      if (currentRoomId && !isBusy) saveCurrentRoom();
+      return;
+    }
+    // 1/2/3 — инструменты
+    if (e.target.tagName === 'INPUT') return;
+    if (e.key === '1') { document.querySelector('[data-tool="wall"]').click(); }
+    if (e.key === '2') { document.querySelector('[data-tool="floor"]').click(); }
+    if (e.key === '3') { document.querySelector('[data-tool="erase"]').click(); }
+  });
+
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      const room = findRoom(currentRoomId);
+      if (room) { resizeCanvasToRoom(room); drawRoom(room); }
+    }, 100);
+  });
+
+  loginModal.classList.add('visible');
+  appContainer.style.display = 'none';
+  </script>
+</body>
+</html>
