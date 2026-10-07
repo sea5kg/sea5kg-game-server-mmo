@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.18)
 
 project(vv-server C CXX)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/src.wsjcpp/CMakeLists.txt)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(EXECUTABLE_OUTPUT_PATH ${vv-server_SOURCE_DIR})
 
 # include header dirs
@@ -33,9 +33,17 @@ list (APPEND WSJCPP_SOURCES "./src/server/vv_server.cpp")
 list (APPEND WSJCPP_SOURCES "./src/server/player_context.cpp")
 
 # libhv
-add_subdirectory(src-libhv)
+set(WITH_OPENSSL OFF CACHE BOOL "")
+set(WITH_CURL OFF CACHE BOOL "")
+# set(WITH_MQTT OFF CACHE BOOL "")
+# set(WITH_EVPP OFF CACHE BOOL "")
+set(BUILD_EXAMPLES OFF CACHE BOOL "")
+# set(WITH_HTTP_CLIENT OFF CACHE BOOL "")
+set(BUILD_SHARED OFF CACHE BOOL "")
+
+add_subdirectory(src/third_party/libhv)
 list (APPEND WSJCPP_LIBRARIES hv_static)
-list (APPEND WSJCPP_INCLUDE_DIRS "${PROJECT_BINARY_DIR}/src-libhv/include/hv")
+list (APPEND WSJCPP_INCLUDE_DIRS "${PROJECT_BINARY_DIR}/src/third_party/libhv/include/hv")
 
 include_directories(${WSJCPP_INCLUDE_DIRS})
 

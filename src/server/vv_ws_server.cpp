@@ -56,33 +56,33 @@ VvWsServer::VvWsServer(GameMapObjects *pGameMapObjects) {
     TAG = "VvWsServer";
     m_pGameMapObjects = pGameMapObjects;
 
-    // m_wsService = new WebSocketService();
-    m_wsService.onopen = [](const WebSocketChannelPtr& channel, const std::string& url) {
-        printf("onopen: GET %s\n", url.c_str());
-        VvWsConnectionContext* ctx = channel->newContext<VvWsConnectionContext>();
-        // send(time) every 1s
-        hv::TimerID timerID = hv::setInterval(1000, [channel](hv::TimerID id) {
-            char str[DATETIME_FMT_BUFLEN] = {0};
-            datetime_t dt = datetime_now();
-            datetime_fmt(&dt, str);
-            nlohmann::json jsonResp;
-            jsonResp["id"] = "sync";
-            jsonResp["result"] = str;
-            channel->send(jsonResp.dump());
-        });
-        ctx->setTimerId(timerID);
-    };
+    // // m_wsService = new WebSocketService();
+    // m_wsService.onopen = [](const WebSocketChannelPtr& channel, const std::string& url) {
+    //     printf("onopen: GET %s\n", url.c_str());
+    //     VvWsConnectionContext* ctx = channel->newContext<VvWsConnectionContext>();
+    //     // send(time) every 1s
+    //     hv::TimerID timerID = hv::setInterval(1000, [channel](hv::TimerID id) {
+    //         char str[DATETIME_FMT_BUFLEN] = {0};
+    //         datetime_t dt = datetime_now();
+    //         datetime_fmt(&dt, str);
+    //         nlohmann::json jsonResp;
+    //         jsonResp["id"] = "sync";
+    //         jsonResp["result"] = str;
+    //         channel->send(jsonResp.dump());
+    //     });
+    //     ctx->setTimerId(timerID);
+    // };
 
-    m_wsService.onmessage = std::bind(&VvWsServer::onMessage, this, std::placeholders::_1, std::placeholders::_2);
+    // m_wsService.onmessage = std::bind(&VvWsServer::onMessage, this, std::placeholders::_1, std::placeholders::_2);
 
-    m_wsService.onclose = [](const WebSocketChannelPtr& channel) {
-        // printf("onclose\n");
-        VvWsConnectionContext* ctx = channel->getContext<VvWsConnectionContext>();
-        if (ctx->getTimerId() != INVALID_TIMER_ID) {
-            killTimer(ctx->getTimerId());
-        }
-        channel->deleteContext<VvWsConnectionContext>();
-    };
+    // m_wsService.onclose = [](const WebSocketChannelPtr& channel) {
+    //     // printf("onclose\n");
+    //     VvWsConnectionContext* ctx = channel->getContext<VvWsConnectionContext>();
+    //     if (ctx->getTimerId() != INVALID_TIMER_ID) {
+    //         killTimer(ctx->getTimerId());
+    //     }
+    //     channel->deleteContext<VvWsConnectionContext>();
+    // };
 
 }
 
