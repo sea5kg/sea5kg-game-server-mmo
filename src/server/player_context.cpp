@@ -7,8 +7,8 @@
 // PlayerContext
 
 PlayerContext::PlayerContext() {
-    m_nPlayerX = 0;
-    m_nPlayerY = 0;
+    m_nPlayerX = 2147483647;
+    m_nPlayerY = 2147483647;
 }
 
 int PlayerContext::getPlayerX() {

@@ -35,7 +35,6 @@ list (APPEND WSJCPP_SOURCES "./src/server/player_context.cpp")
 # libhv
 add_subdirectory(src-libhv)
 list (APPEND WSJCPP_LIBRARIES hv_static)
-message(FATAL "${PROJECT_BINARY_DIR}/src-libhv/include/hv")
 list (APPEND WSJCPP_INCLUDE_DIRS "${PROJECT_BINARY_DIR}/src-libhv/include/hv")
 
 include_directories(${WSJCPP_INCLUDE_DIRS})
