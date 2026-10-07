@@ -1,0 +1,19 @@
+
+rooms:
+  "a428dfed-6caa-4816-a4cc-96a27f4ae8ba":
+    min-x: 0
+    max-x: 1000
+    min-y: 0
+    max-y: 1000
+    map: ./maps/test-room.json
+    chat:
+      messages:
+        enabled: no
+      reactions:
+        enabled: yes
+        type:
+          - smile
+          - cry
+          - ok
+    auth: free
+    public: yes

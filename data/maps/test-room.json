@@ -1,0 +1,24 @@
+{
+  "objects": [
+    {
+      "id": 0,
+      "type": "block",
+      "can-move": true,
+      "can-cross": true,
+      "x": 0,
+      "y": 0,
+      "w": 50,
+      "h": 50
+    },
+    {
+      "id": 1,
+      "type": "wall",
+      "can-move": false,
+      "can-cross": true,
+      "x": 0,
+      "y": 0,
+      "w": 50,
+      "h": 50
+    }
+  ]
+}
