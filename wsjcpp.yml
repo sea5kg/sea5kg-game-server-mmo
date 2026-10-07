@@ -13,11 +13,11 @@ keywords:
   - "c++"
 dependencies:
   - name: "wsjcpp-core"
-    version: "v0.2.1"
+    version: "v0.3.0"
     url: "https://github.com/wsjcpp/wsjcpp-core:master"
     origin: "https://github.com/"
     installation-dir: "./src.wsjcpp/wsjcpp_core"
-    installation-datetime: "Sat, 31 Jul 2021 11:02:47 GMT"
+    installation-datetime: "Wed, 07 Oct 2026 16:06:53 GMT"
   - name: "nlohmann/json"
     version: "v3.9.1"
     url: "https://github.com/nlohmann/json:develop"

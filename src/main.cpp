@@ -11,7 +11,7 @@ int main(int argc, const char* argv[]) {
     std::string TAG = "MAIN";
     std::string appName = std::string(WSJCPP_APP_NAME);
     std::string appVersion = std::string(WSJCPP_APP_VERSION);
-    if (!WsjcppCore::dirExists(".logs")) {
+    if (!wsjcpp::dir_exists(".logs")) {
         WsjcppCore::makeDir(".logs");
     }
     WsjcppLog::setPrefixLogFile("vv-server");
