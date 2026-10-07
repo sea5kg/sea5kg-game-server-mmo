@@ -45,6 +45,16 @@ add_subdirectory(src/third_party/libhv)
 list (APPEND WSJCPP_LIBRARIES hv_static)
 list (APPEND WSJCPP_INCLUDE_DIRS "${PROJECT_BINARY_DIR}/src/third_party/libhv/include/hv")
 
+add_subdirectory(src/third_party/sqlite3)
+# https://www.sqlite.org/threadsafe.html
+# target_compile_definitions(sqlite3-static
+#   PRIVATE
+#     SQLITE_THREADSAFE=0
+# )
+list (APPEND WSJCPP_LIBRARIES sqlite3-static)
+list (APPEND WSJCPP_INCLUDE_DIRS "${PROJECT_BINARY_DIR}/src/third_party/sqlite3/src")
+
+
 include_directories(${WSJCPP_INCLUDE_DIRS})
 
 add_executable (vv-server ${WSJCPP_SOURCES})

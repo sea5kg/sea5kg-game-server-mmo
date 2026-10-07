@@ -24,9 +24,4 @@ dependencies:
     origin: "https://github.com/"
     installation-dir: "./src.wsjcpp/nlohmann_json"
     installation-datetime: "Sat, 31 Jul 2021 11:05:19 GMT"
-  - name: "non-official-sqlite3"
-    version: "v3.34.0"
-    url: "https://github.com/wsjcpp/non-official-sqlite3:master"
-    origin: "https://github.com/"
-    installation-dir: "./src.wsjcpp/non_official_sqlite3"
-    installation-datetime: "Mon, 09 Aug 2021 05:02:16 GMT"
+
