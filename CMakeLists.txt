@@ -28,6 +28,9 @@ list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/gs_mmo/objects/gs_mmo_error
 list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/gs_mmo/objects/gs_mmo_game_net_events.cpp")
 list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/gs_mmo/objects/gs_mmo_player_context.cpp")
 
+# utils
+list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/gs_mmo/utils/gs_mmo_time_measurer.cpp")
+
 # employees
 list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/gs_mmo/employees/employ_config.cpp")
 list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/gs_mmo/employees/employ_players_db.cpp")
