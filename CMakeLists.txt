@@ -30,6 +30,7 @@ list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/gs_mmo/objects/gs_mmo_playe
 
 # employees
 list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/gs_mmo/employees/employ_config.cpp")
+list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/gs_mmo/employees/employ_players_db.cpp")
 list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/gs_mmo/employees/employ_web_server.cpp")
 
 # game

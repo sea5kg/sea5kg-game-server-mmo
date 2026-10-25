@@ -8,6 +8,7 @@ src-img/*
 libhv.*.log
 /data/game-map.db
 /data/logs
+/data/db
 
 # Prerequisites
 *.d

@@ -52,6 +52,7 @@ namespace gs_mmo {
 
 static const int MIN_TCP_PORT = 11;
 static const int MAX_TCP_PORT = 65435;
+static const int DEFAULT_DATABASE_BACKUP_FREQUENCY_IN_SECONDS = 60;
 
 class keys {
 public:

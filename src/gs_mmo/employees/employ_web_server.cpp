@@ -48,6 +48,7 @@
 
 #include "gs_mmo/include/gs_mmo_config.h"
 #include "gs_mmo/include/gs_mmo_globals.h"
+#include "gs_mmo/include/gs_mmo_players_db.h"
 #include "gs_mmo/include/gs_mmo_web_server.h"
 #include "gs_mmo/objects/gs_mmo_error_info.h"
 #include "gs_mmo/objects/gs_mmo_game_net_events.h"
@@ -158,7 +159,7 @@ private:
 
 REGISTRY_WSJCPP_EMPLOY(employ_web_server)
 
-employ_web_server::employ_web_server() : WsjcppEmployBase({gs_mmo::web_server::name()}, {gs_mmo::config::name()}) {
+employ_web_server::employ_web_server() : WsjcppEmployBase({gs_mmo::web_server::name()}, {gs_mmo::config::name(), gs_mmo::players_db::name()}) {
   TAG = gs_mmo::web_server::name();
   m_sApiPathPrefix = "/api/v1/";
   m_userid_counter = 1;
