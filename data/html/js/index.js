@@ -21,36 +21,36 @@ function load_first_map(player_coordinates) {
   //     for (var i in objects) {
   //         var obj = objects[i];
   //         if (obj.l == VVAPI_LAYER_BACKGROUND) {
-  //             vvrender.add_background_object(obj)
+  //             gs_mmo_render.add_background_object(obj)
   //         } else if (obj.l == VVAPI_LAYER_ROADS) {
-  //             vvrender.add_road_object(obj)
+  //             gs_mmo_render.add_road_object(obj)
   //         } else if (obj.l == VVAPI_LAYER_VEGETATION) {
-  //             vvrender.add_vegetation_object(obj)
+  //             gs_mmo_render.add_vegetation_object(obj)
   //         } else if (obj.l == VVAPI_LAYER_BUILDING) {
-  //             vvrender.add_building_object(obj)
+  //             gs_mmo_render.add_building_object(obj)
   //         } else {
   //             console.error("Unknown layer")
   //         }
   //     }
   //     console.log("ws_get_map = ", result);
-  //     vvrender.resized();
-  //     vvrender.update();
+  //     gs_mmo_render.resized();
+  //     gs_mmo_render.update();
   // });
-  vvrender.resized();
-  vvrender.update();
+  gs_mmo_render.resized();
+  gs_mmo_render.update();
 }
 
 document.addEventListener('DOMContentLoaded', function () {
   console.log("Content loaded");
 
   resize_canvas();
-  window.vvrender = new VvRender('game_window_render');
+  window.gs_mmo_render = new GameServerMMORender('game_window_render');
 
   // window.gs_mmo_api.ws_get_player_position().done(function (data) {
   //   console.log("ws_get_player_position: ", data);
-  //   vvrender.player_coordinates = data;
-  //   vvrender.player_target_coordinates = data;
-  //   load_first_map(vvrender.player_coordinates)
+  //   gs_mmo_render.player_coordinates = data;
+  //   gs_mmo_render.player_target_coordinates = data;
+  //   load_first_map(gs_mmo_render.player_coordinates)
   // })
 
   window.gs_mmo_api.on_ws_state((state) => {
@@ -71,9 +71,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  window.gs_mmo_api.on_init_player(window.vvrender.on_init_player);
-  window.gs_mmo_api.on_init_players(window.vvrender.on_init_players);
-  window.gs_mmo_api.on_players_events(window.vvrender.on_players_events);
+  window.gs_mmo_api.on_init_player(window.gs_mmo_render.on_init_player);
+  window.gs_mmo_api.on_init_players(window.gs_mmo_render.on_init_players);
+  window.gs_mmo_api.on_players_events(window.gs_mmo_render.on_players_events);
 });
 
 function resize_canvas() {
@@ -85,16 +85,16 @@ function resize_canvas() {
   el.width = window.innerWidth;
   el.height = window.innerHeight;
 
-  if (window.vvrender) {
-    window.vvrender.resized();
-    window.vvrender.update();
+  if (window.gs_mmo_render) {
+    window.gs_mmo_render.resized();
+    window.gs_mmo_render.update();
   }
 }
 
 window.addEventListener("resize", resize_canvas);
 
 setInterval(() => {
-  if (window.vvrender) {
-    window.vvrender.update();
+  if (window.gs_mmo_render) {
+    window.gs_mmo_render.update();
   }
 }, 40);

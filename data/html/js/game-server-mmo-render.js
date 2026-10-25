@@ -4,7 +4,7 @@ MENU_BTN_STATE_SELECTED = 50;
 MENU_BTN_STATE_PRESSED = 100;
 
 
-class VvRender {
+class GameServerMMORender {
   constructor(canvasid) {
     this.canvas = document.getElementById(canvasid);
 
