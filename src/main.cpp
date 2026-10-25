@@ -56,6 +56,7 @@
 #include <wsjcpp_employees.h>
 #include "game_map_objects.h"
 #include <sqlite3.h>
+#include <sea5kg_sqlite3_wrapper.h>
 #include "database_map.h"
 #include "gs_mmo/include/gs_mmo_globals.h"
 #include "gs_mmo/include/gs_mmo_config.h"
@@ -254,6 +255,11 @@ int main(int argc, const char* argv[]) {
         WsjcppCore::makeDir(".logs");
     }
 
+    int driver_init_ret;
+    if (!sea5kg::sqlite3_wrapper::global::init_driver_sqlite3(driver_init_ret)) {
+      std::cerr << "Failed to initialize build-in sqlite3 library: " + std::to_string(driver_init_ret);
+      return -1;
+    }
     std::cout << "SQLite version:" << sqlite3_libversion() << std::endl;
 
     sea5kg::log::set_log_filename_prefix("gs_mmo_");

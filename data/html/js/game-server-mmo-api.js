@@ -49,23 +49,22 @@ class GameServerMMOApi {
 
       this.ws.onopen = function () {
         console.log("open");
+        self._set_ws_state("connected");
         // still "connecting" until the auth response comes back
-        if (!sessionStorage.getItem("random-session-token")) {
-          var tkn = self.random_session_token();
-          sessionStorage.setItem("random-session-token", tkn);
-          self._set_ws_state("connected");
+        var auth_params = {};
+        if (sessionStorage.getItem("my-secret")) {
+          auth_params["secret"] = sessionStorage.getItem("my-secret");
         }
         self.ws.send(JSON.stringify({
           "id": "auth",
-          "method": "set_random_session_token",
-          "params": {
-            "token": sessionStorage.getItem("random-session-token")
-          }
+          "method": "auth",
+          "params": auth_params
         }));
-        self.ws.send(JSON.stringify({ "method": "hello" }));
-        if (!localStorage.getItem("last-room")) {
-          self.ws.send(JSON.stringify({ "method": "goto_room" }));
-        }
+
+        // self.ws.send(JSON.stringify({ "method": "hello" }));
+        // if (!localStorage.getItem("last-room")) {
+        //   self.ws.send(JSON.stringify({ "method": "goto_room" }));
+        // }
       };
 
       this.ws.onmessage = function (ev) {
@@ -75,6 +74,10 @@ class GameServerMMOApi {
         var msg_id = resp["id"];
 
         if (msg_id == "auth") {
+          if (resp["result"]["secret"] !== undefined) {
+            sessionStorage.setItem("my-secret", resp["result"]["secret"]);
+            delete resp["result"]["secret"];
+          }
           self.__init_player.set_data(resp["result"])
           self._set_ws_state("connected");
         }
@@ -130,17 +133,6 @@ class GameServerMMOApi {
   on_players_events(fn) {
     return this.__players_events.add(fn);
   }
-
-  random_session_token() {
-    var length = 50;
-    var result = '';
-    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    var charactersLength = characters.length;
-    for (var i = 0; i < length; i++) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return result;
-  };
 
   promise() {
     var d = {};

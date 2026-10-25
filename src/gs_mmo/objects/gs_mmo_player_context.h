@@ -56,17 +56,23 @@ namespace gs_mmo {
 class player_context {
 public:
   player_context();
-  const std::string &id() const;
-  void set_id(const std::string &);
+  int id() const;
+  void set_id(int v);
+  const std::string &name() const;
+  void set_name(const std::string &);
   int x() const;
   int y() const;
   void update_position(int x, int y);
   nlohmann::json to_json() const;
   void update_position_in_json(nlohmann::json &) const;
+  long get_last_updated() const;
 private:
-  std::string m_id;
+  void updated();
+  int m_id;
+  std::string m_name;
   int m_x;
   int m_y;
+  long m_last_updated;
 };
 
 } // namespace gs_mmo

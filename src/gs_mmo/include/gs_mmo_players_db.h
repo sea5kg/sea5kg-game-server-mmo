@@ -48,14 +48,31 @@
 
 #pragma once
 
-#include <vector>
 #include <json.hpp>
+#include <vector>
 
 namespace gs_mmo {
 
+class player_db_info {
+public:
+  long id = 0;
+  std::string player_name;
+  std::string secret;
+  long created_dt = 0;
+  long updated_dt = 0;
+  long pos_x = 0;
+  long pos_y = 0;
+};
+
 class players_db {
 public:
-  static std::string name() { return "players_db"; }
+  static std::string name() {
+    return "players_db";
+  }
+
+  virtual std::shared_ptr<gs_mmo::player_db_info> create_player() = 0;
+  virtual std::shared_ptr<gs_mmo::player_db_info> get_player_by_secret(const std::string &secret) = 0;
+  virtual void update_last_position(int id, int x, int y, bool force_update = false) = 0;
 };
 
 } // namespace gs_mmo

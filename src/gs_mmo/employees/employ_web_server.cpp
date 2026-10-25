@@ -146,8 +146,6 @@ private:
   // std::map<const WebSocketChannelPtr *, std::string> m_connected_users;
   std::unordered_map<std::weak_ptr<hv::WebSocketChannel>, std::string, WeakPtrHash, WeakPtrEqual> m_connected_users;
 
-  // TODO to employ
-  unsigned int m_userid_counter;
   std::map<std::string, gs_mmo::player_context> m_players;
   gs_mmo::config *m_config;
   nlohmann::json m_activity;
@@ -155,6 +153,7 @@ private:
   gs_mmo::game_net_events m_net_events;
   std::thread m_sync_thread;
   std::atomic<bool> m_sync_thread_running{true};
+  gs_mmo::players_db *m_players_db;
 };
 
 REGISTRY_WSJCPP_EMPLOY(employ_web_server)
@@ -162,11 +161,11 @@ REGISTRY_WSJCPP_EMPLOY(employ_web_server)
 employ_web_server::employ_web_server() : WsjcppEmployBase({gs_mmo::web_server::name()}, {gs_mmo::config::name(), gs_mmo::players_db::name()}) {
   TAG = gs_mmo::web_server::name();
   m_sApiPathPrefix = "/api/v1/";
-  m_userid_counter = 1;
   m_config = nullptr;
   m_all_players.set_method_name("init_players");
   m_all_players.set_collect_events(false);
   m_net_events.set_method_name("players_events");
+  m_players_db = findWsjcppEmploy<gs_mmo::players_db>();
 }
 
 employ_web_server::~employ_web_server() {
@@ -316,7 +315,7 @@ void employ_web_server::web_socket_onmessage(const WebSocketChannelPtr &channel,
   }
 
   gs_mmo::player_context player_ctx;
-  if (tkn != "") {
+  if (!tkn.empty()) {
     auto it = m_players.find(tkn);
     if (it != m_players.end())
       player_ctx = it->second;
@@ -330,37 +329,58 @@ void employ_web_server::web_socket_onmessage(const WebSocketChannelPtr &channel,
     // if (player_ctx.id != )
     auto it = m_players.find(tkn);
     if (it != m_players.end()) {
-      it->second.update_position(j["params"]["x"], j["params"]["y"]);
-      // TODO send event player changed coordinates
+      int x = j["params"]["x"];
+      int y = j["params"]["y"];
+      it->second.update_position(x, y);
+      m_players_db->update_last_position(it->second.id(), x, y);
       m_all_players.update_player(it->second);
       m_net_events.update_player(it->second);
     } else {
       std::cout << "Not found player by token " << tkn << std::endl;
     }
-  } else if (sMethod == "set_random_session_token") {
-    std::string new_tkn = j["params"]["token"];
+  } else if (sMethod == "auth") {
+    std::string income_secret = "";
+    if (j["params"].contains("secret")) {
+      income_secret = j["params"]["secret"];
+    }
+    sea5kg::log::debug(TAG, "secret: " + income_secret);
+    std::shared_ptr<gs_mmo::player_db_info> row_db;
+    if (income_secret.empty()) {
+      row_db = m_players_db->create_player();
+    } else {
+      row_db = m_players_db->get_player_by_secret(income_secret);
+      if (!row_db) {
+        row_db = m_players_db->create_player();
+      }
+    }
+
+    nlohmann::json jsonResp;
+    jsonResp["id"] = j["id"];
+    player_ctx.set_id(row_db->id);
+    player_ctx.set_name(row_db->player_name);
+    player_ctx.update_position(row_db->pos_x, row_db->pos_y);
+    jsonResp["result"] = player_ctx.to_json();
+    if (row_db->secret != income_secret) {
+      jsonResp["result"]["secret"] = row_db->secret;
+    }
+
     {
       std::lock_guard<std::mutex> lock(m_mutex_connected_users);
       auto it = m_connected_users.find(channel);
       if (it != m_connected_users.end())
-        it->second = new_tkn;
+        it->second = row_db->secret;
+    }
+    // m_players[]
+    auto it = m_players.find(income_secret);
+    if (it != m_players.end())
+      player_ctx = it->second;
+    else {
+      m_players[income_secret] = player_ctx;
     }
 
-    {
-      auto it = m_players.find(new_tkn);
-      if (it != m_players.end())
-        player_ctx = it->second;
-      else {
-        player_ctx.set_id("p" + std::to_string(m_userid_counter++));
-        m_players[new_tkn] = player_ctx;
-      }
-    }
     m_all_players.add_player(player_ctx);
     m_net_events.add_player(player_ctx);
 
-    nlohmann::json jsonResp;
-    jsonResp["id"] = j["id"];
-    jsonResp["result"] = player_ctx.to_json();
     channel->send(jsonResp.dump());
     channel->send(m_all_players.to_string_json_request());
   } else {
@@ -372,22 +392,23 @@ void employ_web_server::web_socket_onclose(const WebSocketChannelPtr &channel) {
   std::cout << "ws. onclose = " << std::endl;
   // const WebSocketChannelPtr *ch_ptr = &channel;
   std::lock_guard<std::mutex> lock(m_mutex_connected_users);
-  std::string tkn;
+  std::string secret;
   auto it = m_connected_users.find(channel);
   if (it != m_connected_users.end()) {
-    tkn = it->second;
+    secret = it->second;
     m_connected_users.erase(it);
   }
 
   gs_mmo::player_context player_ctx;
-  if (tkn != "") {
-    auto it = m_players.find(tkn);
+  if (!secret.empty()) {
+    auto it = m_players.find(secret);
     if (it != m_players.end())
       player_ctx = it->second;
   }
-  if (player_ctx.id() != "") {
-    m_all_players.remove_player(player_ctx.id());
-    m_net_events.remove_player(player_ctx.id());
+  if (!player_ctx.name().empty()) {
+    m_all_players.remove_player(player_ctx.name());
+    m_net_events.remove_player(player_ctx.name());
+    m_players_db->update_last_position(player_ctx.id(), player_ctx.x(), player_ctx.y(), true);
   }
 }
 
@@ -403,8 +424,8 @@ void employ_web_server::web_socket_run_sync_thread() {
     if (last_update < m_net_events.get_last_time_event_ms()) {
       std::string event_data = m_net_events.pop_and_reset(last_update);
       std::lock_guard<std::mutex> lock(m_mutex_connected_users);
-      for (const auto &[channel_weak, token] : m_connected_users) {
-        if (token.empty())
+      for (const auto &[channel_weak, secret] : m_connected_users) {
+        if (secret.empty())
           continue;
         if (auto channel = channel_weak.lock()) {
           channel->send(event_data);

@@ -70,39 +70,39 @@ void game_net_events::set_collect_events(bool v) {
 
 void game_net_events::add_player(const gs_mmo::player_context &ctx) {
   std::lock_guard<std::mutex> lock(m_mutex);
-  m_resp["params"]["p"][ctx.id()] = nlohmann::json::object();
-  ctx.update_position_in_json(m_resp["params"]["p"][ctx.id()]);
+  m_resp["params"]["p"][ctx.name()] = nlohmann::json::object();
+  ctx.update_position_in_json(m_resp["params"]["p"][ctx.name()]);
   if (m_collect_events) {
     nlohmann::json e = nlohmann::json::object();
     e["t"] = game_net_events_type::ADD_PLAYER;
-    e["id"] = ctx.id();
+    e["n"] = ctx.name();
     ctx.update_position_in_json(e);
     unsafe_add_event(e);
   }
 }
 
-void game_net_events::remove_player(const std::string &userid) {
+void game_net_events::remove_player(const std::string &player_name) {
   std::lock_guard<std::mutex> lock(m_mutex);
-  if (m_resp["params"]["p"].contains(userid)) {
-    m_resp["params"]["p"].erase(userid);
+  if (m_resp["params"]["p"].contains(player_name)) {
+    m_resp["params"]["p"].erase(player_name);
   }
   if (m_collect_events) {
     nlohmann::json e = nlohmann::json::object();
     e["t"] = game_net_events_type::REMOVE_PLAYER;
-    e["id"] = userid;
+    e["n"] = player_name;
     unsafe_add_event(e);
   }
 }
 
 void game_net_events::update_player(const gs_mmo::player_context &ctx) {
   std::lock_guard<std::mutex> lock(m_mutex);
-  if (m_resp["params"]["p"].contains(ctx.id())) {
-    ctx.update_position_in_json(m_resp["params"]["p"][ctx.id()]);
+  if (m_resp["params"]["p"].contains(ctx.name())) {
+    ctx.update_position_in_json(m_resp["params"]["p"][ctx.name()]);
   }
   if (m_collect_events) {
     bool found_event = false;
     for (auto &e: m_resp["params"]["e"]) {
-      if (e["t"] == game_net_events_type::MOVE_PLAYER && e.contains("id") && e["id"] == ctx.id()) {
+      if (e["t"] == game_net_events_type::MOVE_PLAYER && e.contains("n") && e["n"] == ctx.name()) {
         ctx.update_position_in_json(e);
         found_event = true;
         // No need update m_last_events_ms
@@ -112,7 +112,7 @@ void game_net_events::update_player(const gs_mmo::player_context &ctx) {
     if (!found_event) {
       nlohmann::json e = nlohmann::json::object();
       e["t"] = game_net_events_type::MOVE_PLAYER;
-      e["id"] = ctx.id();
+      e["n"] = ctx.name();
       ctx.update_position_in_json(e);
       unsafe_add_event(e);
     }
@@ -141,7 +141,7 @@ void game_net_events::unsafe_add_event(const nlohmann::json &e_data) {
   long now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now).count();
 
   nlohmann::json e = e_data;
-  e["n"] = now_ms;
+  e["m"] = now_ms;
   m_resp["params"]["e"].push_back(e);
   m_last_events_ms = now_ms;
 }

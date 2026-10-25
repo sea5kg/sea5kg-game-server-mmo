@@ -68,7 +68,7 @@ include_directories(${WSJCPP_INCLUDE_DIRS})
 
 add_executable (game-server-mmo ${WSJCPP_SOURCES})
 
-target_link_libraries(game-server-mmo ${WSJCPP_LIBRARIES})
+target_link_libraries(game-server-mmo -lpthread -lssl -lcrypto ${WSJCPP_LIBRARIES})
 
 install(
     TARGETS

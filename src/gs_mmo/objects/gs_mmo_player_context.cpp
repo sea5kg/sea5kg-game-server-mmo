@@ -50,15 +50,26 @@
 
 namespace gs_mmo {
 
-player_context::player_context() : m_id(""), m_x(0), m_y(0) {
+player_context::player_context() : m_name(""), m_x(0), m_y(0) {
+  updated();
 }
 
-const std::string &player_context::id() const {
+int player_context::id() const {
   return m_id;
 }
 
-void player_context::set_id(const std::string &v) {
+void player_context::set_id(int v) {
   m_id = v;
+  updated();
+}
+
+const std::string &player_context::name() const {
+  return m_name;
+}
+
+void player_context::set_name(const std::string &v) {
+  m_name = v;
+  updated();
 }
 
 int player_context::x() const {
@@ -72,11 +83,12 @@ int player_context::y() const {
 void player_context::update_position(int x, int y) {
   m_x = x;
   m_y = y;
+  updated();
 }
 
 nlohmann::json player_context::to_json() const {
   nlohmann::json ret;
-  ret["id"] = m_id;
+  ret["n"] = m_name;
   ret["x"] = m_x;
   ret["y"] = m_y;
   return ret;
@@ -85,6 +97,15 @@ nlohmann::json player_context::to_json() const {
 void player_context::update_position_in_json(nlohmann::json &j) const {
   j["x"] = m_x;
   j["y"] = m_y;
+}
+
+long player_context::get_last_updated() const {
+  return m_last_updated;
+}
+
+void player_context::updated() {
+  auto now = std::chrono::system_clock::now().time_since_epoch();
+  m_last_updated = std::chrono::duration_cast<std::chrono::milliseconds>(now).count();
 }
 
 } // namespace gs_mmo

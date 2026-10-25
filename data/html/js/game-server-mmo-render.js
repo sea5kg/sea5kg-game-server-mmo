@@ -65,7 +65,7 @@ class GameServerMMORender {
     this.on_init_player = function (data) {
       if (data === undefined) return;
       console.log("on_init_player: ", data);
-      self.player_id = data["id"];
+      self.player_name = data["n"];
       self.player_coordinates = data;
       self.player_target_coordinates = data;
       console.log("Render, on_init_player", data);
@@ -84,20 +84,20 @@ class GameServerMMORender {
       for (var i = 0; i < data["e"].length; i++) {
         var e = data["e"][i];
         var et = e["t"];
-        var eid = e["id"];
+        var player_name = e["n"];
         // ADD_PLAYER = 1,
         // REMOVE_PLAYER = 2,
         // MOVE_PLAYER = 3
 
         if (et == 1) { // ADD_PLAYER
-          self.__other_players[eid] = {};
-          self.__other_players[eid]["x"] = e["x"];
-          self.__other_players[eid]["y"] = e["y"];
+          self.__other_players[player_name] = {};
+          self.__other_players[player_name]["x"] = e["x"];
+          self.__other_players[player_name]["y"] = e["y"];
         } else if (et == 2) { // REMOVE_PLAYER
-          delete self.__other_players[eid];
+          delete self.__other_players[player_name];
         } else if (et == 3) { // MOVE_PLAYER
-          self.__other_players[eid]["x"] = e["x"];
-          self.__other_players[eid]["y"] = e["y"];
+          self.__other_players[player_name]["x"] = e["x"];
+          self.__other_players[player_name]["y"] = e["y"];
         }
       }
       const keys = Object.keys(self.__other_players);
@@ -372,7 +372,7 @@ class GameServerMMORender {
       const keys = Object.keys(this.__other_players);
       // console.log("draw_players " + keys);
       for (var key of keys) {
-        if (key === this.player_id) {
+        if (key === this.player_name) {
           continue;
         }
         var x = this.__other_players[key]["x"]

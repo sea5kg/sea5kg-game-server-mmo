@@ -67,7 +67,7 @@ public:
   void set_method_name(const std::string &method);
   void set_collect_events(bool v);
   void add_player(const gs_mmo::player_context &ctx);
-  void remove_player(const std::string &userid);
+  void remove_player(const std::string &player_name);
   void update_player(const gs_mmo::player_context &ctx);
   // void add_event(const nlohmann::json &);
   std::string to_string_json_request();
