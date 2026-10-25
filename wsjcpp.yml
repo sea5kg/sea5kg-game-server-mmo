@@ -51,4 +51,259 @@ resources:
       pack-as: "text"
       modified: 1792294232
       sha1: "bbc792b96f093eea34c02ca6001f773f5ca5f731"
+    - filepath: "./data/html/sound/vv.m4a"
+      size: 7264725
+      pack-as: "binary"
+      modified: 1629435100
+      sha1: "4b014f1d417e236b6227ca5b52579937787ae01a"
+    - filepath: "./data/html/js/game-server-mmo-render.js"
+      size: 17299
+      pack-as: "binary"
+      modified: 1792921994
+      sha1: "8edfe00d2e976a602b461fae7ea6f1c43d335324"
+    - filepath: "./data/html/js/game-server-mmo-api.js"
+      size: 7757
+      pack-as: "binary"
+      modified: 1792866466
+      sha1: "896b31773fe79a02663e106b5c13b9751382bc25"
+    - filepath: "./data/html/js/index.js"
+      size: 3082
+      pack-as: "binary"
+      modified: 1792922031
+      sha1: "f38c76d46020b1b071c6a10217e3cc972cefc4de"
+    - filepath: "./data/html/img/user-sprite.png"
+      size: 59404
+      pack-as: "binary"
+      modified: 1627733334
+      sha1: "06a39ec7cf24ecf4bdf22a77d4022f39f96bc97c"
+    - filepath: "./data/html/img/borders0.png"
+      size: 65511
+      pack-as: "binary"
+      modified: 1628927442
+      sha1: "0d37ad3215583fba6c23dc9ad3db581ef42e25bd"
+    - filepath: "./data/html/img/menu-modes.png"
+      size: 14417
+      pack-as: "binary"
+      modified: 1629192651
+      sha1: "bb04e703ec43d8ed7274bcf0a4537953e47d3be6"
+    - filepath: "./data/html/img/player-sprite-50x50.png"
+      size: 6531
+      pack-as: "binary"
+      modified: 1627733334
+      sha1: "1e50f0d5ac8455d633e190cba781f8f57292ed2a"
+    - filepath: "./data/html/img/menu-build.png"
+      size: 921
+      pack-as: "binary"
+      modified: 1629104678
+      sha1: "0084e54f61d64141f553e7405c26ffd808a1808b"
+    - filepath: "./data/html/img/home0-100x100.png"
+      size: 34392
+      pack-as: "binary"
+      modified: 1627733334
+      sha1: "de43444938443ee3f7bd73ec7078755f47448718"
+    - filepath: "./data/html/img/logo-200x50.png"
+      size: 21907
+      pack-as: "binary"
+      modified: 1627733334
+      sha1: "7fcc27891a983a912ab515cbbda85f18526abd75"
+    - filepath: "./data/html/img/players/player0-right-50x50.png"
+      size: 5676
+      pack-as: "binary"
+      modified: 1627733334
+      sha1: "cc6f366650a8ab113833f4021d1f92e3cb999f28"
+    - filepath: "./data/html/img/players/mafuyu.png"
+      size: 26073
+      pack-as: "binary"
+      modified: 1628743244
+      sha1: "812903f8c16a791245740dd0f468395f0fa3e8c6"
+    - filepath: "./data/html/img/players/player0-up-50x50.png"
+      size: 5726
+      pack-as: "binary"
+      modified: 1627733334
+      sha1: "1f2d59927eb4cc107bc20fe52de5a0a82df15cc7"
+    - filepath: "./data/html/img/players/player1-50x50.png"
+      size: 18470
+      pack-as: "binary"
+      modified: 1627733334
+      sha1: "0f8e2cadce9a3f96869e6320f7d6e87213896607"
+    - filepath: "./data/html/img/players/player0-50x50.png"
+      size: 17760
+      pack-as: "binary"
+      modified: 1627733334
+      sha1: "c14aecc33b835b4d775078da4de9e140906bc66d"
+    - filepath: "./data/html/img/players/player0-left-50x50.png"
+      size: 8578
+      pack-as: "binary"
+      modified: 1627733334
+      sha1: "5580be6e849e06db7f73eaf2cc5f47abab46eeff"
+    - filepath: "./data/html/img/players/player0-down-50x50.png"
+      size: 6147
+      pack-as: "binary"
+      modified: 1627733334
+      sha1: "6c1225235e8710a712d635b8af2cc6485e545728"
+    - filepath: "./data/html/img/objects/road3-50x50.png"
+      size: 16166
+      pack-as: "binary"
+      modified: 1627733334
+      sha1: "fa68a3d4b191ee5103e395700b91e1484e9d5657"
+    - filepath: "./data/html/img/objects/road5-50x50.png"
+      size: 16101
+      pack-as: "binary"
+      modified: 1627733334
+      sha1: "6e41967e534b412d606dffcc7764318ad555ed3c"
+    - filepath: "./data/html/img/objects/tree0-50x100.png"
+      size: 21685
+      pack-as: "binary"
+      modified: 1627733334
+      sha1: "3c19fa3faaccfd73c8e821351aea845fa7310b9a"
+    - filepath: "./data/html/img/objects/road2-50x50.png"
+      size: 14797
+      pack-as: "binary"
+      modified: 1627733334
+      sha1: "8f4b595c1ebeb94a353d95c793e8092046a2441e"
+    - filepath: "./data/html/img/objects/road4-50x50.png"
+      size: 16059
+      pack-as: "binary"
+      modified: 1627733334
+      sha1: "ae33d18c639e339e6518af36e1d228fc1cc4294c"
+    - filepath: "./data/html/img/objects/road1-50x50.png"
+      size: 15027
+      pack-as: "binary"
+      modified: 1627733334
+      sha1: "e58fcf5905757a76e953221f3ec8e15f7a6c0c14"
+    - filepath: "./data/html/img/objects/road6-50x50.png"
+      size: 16238
+      pack-as: "binary"
+      modified: 1627733334
+      sha1: "91ba9c3c6f630613ff5ecd75d82dfafc6615edf5"
+    - filepath: "./data/html/img/objects/empty-50x50.png"
+      size: 1469
+      pack-as: "binary"
+      modified: 1627733334
+      sha1: "6b812493af7956f7e906f664e259ac256d4dc7d6"
+    - filepath: "./data/html/img/objects/stone0-50x50.png"
+      size: 15310
+      pack-as: "binary"
+      modified: 1627733334
+      sha1: "f5bef56b7523f20c597639e65c503eac6c002bfc"
+    - filepath: "./data/html/img/objects/road0-50x50.png"
+      size: 13370
+      pack-as: "binary"
+      modified: 1627733334
+      sha1: "7feccc4e118353d2318c3691a9516e7884e2e756"
+    - filepath: "./data/html/img/button/button.png"
+      size: 2053
+      pack-as: "binary"
+      modified: 1627733334
+      sha1: "a0c3a75b15cdae47f342b249721349abdda92a1c"
+    - filepath: "./data/html/img/button/button-end.png"
+      size: 429
+      pack-as: "binary"
+      modified: 1627733334
+      sha1: "f28cb85aaf14bda446eb4a2e1f99dcac0df8212d"
+    - filepath: "./data/html/img/button/button-center.png"
+      size: 226
+      pack-as: "binary"
+      modified: 1627733334
+      sha1: "1730ca1a2f8960b6d1ce0c15a144e5a0da3ae7a8"
+    - filepath: "./data/html/img/button/button-begin.png"
+      size: 1713
+      pack-as: "binary"
+      modified: 1627733334
+      sha1: "eda609f2e426962cb14b0ab41ad54255cbe0e73b"
+    - filepath: "./data/html/img/background/grace0-50x50.png"
+      size: 11118
+      pack-as: "binary"
+      modified: 1628699570
+      sha1: "9bef3ed0c7d0d17b742841873b328b5498bf967e"
+    - filepath: "./data/html/admin/index.html"
+      size: 7457
+      pack-as: "binary"
+      modified: 1791988279
+      sha1: "df449c379ea615c2fe52d3facc8965bac879fc2c"
+    - filepath: "./data/html/admin/js/api.js"
+      size: 5003
+      pack-as: "binary"
+      modified: 1791988165
+      sha1: "53ce650992667c70a15f8d6585a3879b85330dba"
+    - filepath: "./data/html/admin/js/state.js"
+      size: 1366
+      pack-as: "binary"
+      modified: 1791987934
+      sha1: "bead17f02ed3c4495c5dc70ebcbc942094a82b14"
+    - filepath: "./data/html/admin/js/utils.js"
+      size: 1040
+      pack-as: "binary"
+      modified: 1791987945
+      sha1: "54b74586bde66ce3c6d5d5981e202a117331278d"
+    - filepath: "./data/html/admin/js/main.js"
+      size: 4059
+      pack-as: "binary"
+      modified: 1791988037
+      sha1: "43dc022a3163a0f527ba5b34f1460c0a799d18be"
+    - filepath: "./data/html/admin/js/ui/inspector.js"
+      size: 3753
+      pack-as: "binary"
+      modified: 1791987979
+      sha1: "2abde2a4cd3ff21fd8dda60425a96aa533042bfe"
+    - filepath: "./data/html/admin/js/ui/modal.js"
+      size: 1854
+      pack-as: "binary"
+      modified: 1791987952
+      sha1: "f2fa442fd8c85c14d824eed520d475d79d8c3465"
+    - filepath: "./data/html/admin/js/ui/sidebar.js"
+      size: 3675
+      pack-as: "binary"
+      modified: 1791987969
+      sha1: "60aaa6917cc5f454a6959642b4d1b4b973ce96d5"
+    - filepath: "./data/html/admin/js/ui/toolbar.js"
+      size: 2686
+      pack-as: "binary"
+      modified: 1791987991
+      sha1: "ee59f6ede6246dd8d986c3023df67ffb8865ebce"
+    - filepath: "./data/html/admin/js/editor/canvas.js"
+      size: 6900
+      pack-as: "binary"
+      modified: 1791988016
+      sha1: "1d0804afae887d26f12ea855c931bf95d4446b49"
+    - filepath: "./data/html/admin/js/editor/tools.js"
+      size: 1229
+      pack-as: "binary"
+      modified: 1791988000
+      sha1: "1f070cde6cc676e98cd6e0d5bdf307e3330b6984"
+    - filepath: "./data/html/admin/css/canvas.css"
+      size: 4231
+      pack-as: "binary"
+      modified: 1791987893
+      sha1: "bb854dd64253d7372401b40bee1b8cd68f7cdec5"
+    - filepath: "./data/html/admin/css/components.css"
+      size: 5639
+      pack-as: "binary"
+      modified: 1791987879
+      sha1: "97fb83d738748f704e43bdaa376625890f60e543"
+    - filepath: "./data/html/admin/css/layout.css"
+      size: 3250
+      pack-as: "binary"
+      modified: 1791987867
+      sha1: "5d4f4d90370b9d27c8a4ba94c7607d37a09b18b9"
+    - filepath: "./data/html/admin/css/base.css"
+      size: 974
+      pack-as: "binary"
+      modified: 1791987838
+      sha1: "8ae2a2ec8afc01a0a8ceae24644c59efb03c596a"
+    - filepath: "./data/html/favicon.ico"
+      size: 20502
+      pack-as: "binary"
+      modified: 1627923657
+      sha1: "8c94f6f53b1cea470a8e1935262dbab58c8b6f2d"
+    - filepath: "./data/html/index.html"
+      size: 1088
+      pack-as: "binary"
+      modified: 1792921954
+      sha1: "f29c0dbc492db025e4cfe6b45ce01921b96fd8eb"
+    - filepath: "./data/html/logo-70x70.png"
+      size: 27286
+      pack-as: "binary"
+      modified: 1627923618
+      sha1: "7dcf275a62daaea7de7f192c57b440fc5c5a16a7"
 

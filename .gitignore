@@ -9,6 +9,7 @@ libhv.*.log
 /data/game-map.db
 /data/logs
 /data/db
+/data_test
 
 # Prerequisites
 *.d
