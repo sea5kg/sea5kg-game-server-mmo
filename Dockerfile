@@ -1,18 +1,16 @@
-FROM debian:10
+# stage 0: build binary
+FROM sea5kg/sea5kg-game-server-mmo:build-environment-2026-10-28
 
-RUN apt-get update && apt-get install cmake gcc g++ make \
-    pkg-config -y && rm -rf /var/lib/apt/lists/*
+COPY ./ /root/
+WORKDIR /root/
+RUN ./build_simple.sh
 
-COPY . /opt/src
+# stage 1: release
+FROM sea5kg/sea5kg-game-server-mmo:release-environment-2026-10-28
+LABEL "maintainer"="Evgenii Sopov <mrseakg@gmail.com>"
+LABEL "repository"="https://github.com/sea5kg/sea5kg-game-server-mmo"
 
-WORKDIR /opt/src
+RUN mkdir /root/data
+COPY --from=0 /root/game-server-mmo /usr/bin/game-server-mmo
 
-RUN mkdir -p tmp
-
-WORKDIR /opt/src/tmp
-RUN cmake ..
-RUN make
-
-WORKDIR /opt/src
-
-CMD ["bash", "-c", "./game-server-mmo"]
+CMD ["game-server-mmo","start"]

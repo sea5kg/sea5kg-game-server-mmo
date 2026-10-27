@@ -96,7 +96,7 @@ bool findWorkDir(std::vector<std::string> &arguments, std::string &workDir) {
 
   // Anyway, try read from environment. And override from args.
   if (WsjcppCore::getEnv("GS_MMO_WORKDIR", workDir)) {
-    std::cout << "Working directory get from environment variable CTF01D_WORKDIR: " << workDir << std::endl;
+    std::cout << "Working directory get from environment variable GS_MMO_WORKDIR: " << workDir << std::endl;
     return true;
   }
 
