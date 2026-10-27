@@ -4,6 +4,89 @@ MENU_BTN_STATE_SELECTED = 50;
 MENU_BTN_STATE_PRESSED = 100;
 
 
+class GameServerMMOSpritePlayerMove {
+  constructor() {
+    this.player = {
+      x: 0,
+      y: 0,
+    }
+    this.target = {
+      x: 0,
+      y: 0,
+    };
+    this.sprite = { x: 0, y: 0, d: 50, t: 0 };
+  }
+
+  set_player_position(data) {
+    // console.log("1", data)
+    if (!data) {
+      return;
+    }
+    // console.log("2", data)
+    this.player.x = parseInt(data["x"], 10);
+    this.player.y = parseInt(data["y"], 10);
+  }
+
+  set_target_position(data) {
+    if (!data) {
+      return;
+    }
+    this.target.x = parseInt(data["x"], 10);
+    this.target.y = parseInt(data["y"], 10);
+  }
+
+  update(fn) {
+    if (
+      Math.hypot(
+        this.target.x - this.player.x,
+        this.target.y - this.player.y
+      ) > 5
+    ) {
+      var angel = Math.atan2(
+        this.target.x - this.player.x,
+        this.target.y - this.player.y
+      )
+
+      const leftDown = -1 * Math.PI / 4;
+      const leftTop = -3 * Math.PI / 4;
+      const rightTop = 3 * Math.PI / 4;
+      const rightDown = Math.PI / 4;
+
+      if (angel >= rightDown && angel <= rightTop) {
+        this.sprite.y = 100;
+      } else if (angel > leftTop && angel <= leftDown) {
+        this.sprite.y = 50;
+      } else if (angel > leftDown && angel <= rightDown) {
+        this.sprite.y = 0;
+      } else if (angel > rightTop || angel <= leftTop) {
+        this.sprite.y = 150;
+      } else {
+        this.sprite.y = 0;
+      }
+      const t = new Date().getTime();
+      if (t - this.sprite.t > 100) { // every 10 frames
+        this.sprite.x += this.sprite.d;
+        if (this.sprite.x >= 200) {
+          this.sprite.x = 0;
+        }
+        this.sprite.t = t;
+      }
+
+      if (fn) {
+        fn(this, angel);
+      }
+    } else {
+      this.sprite = {
+        x: 0,
+        y: 0,
+        d: 50,
+        t: 0
+      }
+    }
+  }
+}
+
+
 class GameServerMMORender {
   constructor(canvasid) {
     this.canvas = document.getElementById(canvasid);
@@ -21,14 +104,9 @@ class GameServerMMORender {
     this.player_draw_coordinates = {};
     this.topLeftRealX = 0;
     this.topLeftRealY = 0;
-    this.render_frame_player = { x: 0, y: 0, d: 50, t: 0 };
+    this.render_frame_player = new GameServerMMOSpritePlayerMove();
     this.render_click_mode = null;
-    this.player_coordinates = null;
     this.highlight_road = null;
-    this.player_target_coordinates = {
-      x: 0,
-      y: 0
-    }
     this.menu_buttons = [
       {
         id: "destroy",
@@ -66,8 +144,8 @@ class GameServerMMORender {
       if (data === undefined) return;
       console.log("on_init_player: ", data);
       self.player_name = data["n"];
-      self.player_coordinates = data;
-      self.player_target_coordinates = data;
+      self.render_frame_player.set_player_position(data);
+      self.render_frame_player.set_target_position(data);
       console.log("Render, on_init_player", data);
       self.resized();
     }
@@ -322,8 +400,8 @@ class GameServerMMORender {
         this.player_draw_coordinates.y
       );
       this.ctx.lineTo(
-        this.player_target_coordinates.x - this.topLeftRealX,
-        this.player_target_coordinates.y - this.topLeftRealY,
+        this.render_frame_player.target.x - this.topLeftRealX,
+        this.render_frame_player.target.y - this.topLeftRealY,
       );
       this.ctx.lineWidth = 4;
 
@@ -331,15 +409,15 @@ class GameServerMMORender {
 
       this.ctx.beginPath();
       this.ctx.arc(
-        this.player_target_coordinates.x - this.topLeftRealX,
-        this.player_target_coordinates.y - this.topLeftRealY,
+        this.render_frame_player.target.x - this.topLeftRealX,
+        this.render_frame_player.target.y - this.topLeftRealY,
         25, 0, 2 * Math.PI, false);
       this.ctx.fill();
 
       this.ctx.drawImage(
         this.cacheImages[texturePlayer].img,
-        this.render_frame_player.x,
-        this.render_frame_player.y,
+        this.render_frame_player.sprite.x,
+        this.render_frame_player.sprite.y,
         50, 50,
         this.player_draw_coordinates.x - 25,
         this.player_draw_coordinates.y - 45,
@@ -351,10 +429,10 @@ class GameServerMMORender {
       }
     }
 
-    if (this.player_coordinates) {
+    if (this.render_frame_player.player) {
       this.ctx.fillStyle = "#000";
       this.ctx.fillText(
-        "{x,y}={" + this.player_coordinates.x + "," + this.player_coordinates.y + "}",
+        "{x,y}={" + this.render_frame_player.player.x + "," + this.render_frame_player.player.y + "}",
         20,
         window.innerHeight - 40
       );
@@ -386,8 +464,8 @@ class GameServerMMORender {
         this.ctx.drawImage(
           this.cacheImages[texturePlayer].img,
           // TODO specify for each player
-          this.render_frame_player.x,
-          this.render_frame_player.y,
+          this.render_frame_player.sprite.x,
+          this.render_frame_player.sprite.y,
           50, 50,
           x - this.topLeftRealX - 25,
           y - this.topLeftRealY - 45,
@@ -398,57 +476,68 @@ class GameServerMMORender {
   }
 
   move_player() {
-    if (!this.player_coordinates) {
+    if (!this.render_frame_player.player) {
       return;
     }
-    if (
-      Math.hypot(
-        this.player_target_coordinates.x - this.player_coordinates.x,
-        this.player_target_coordinates.y - this.player_coordinates.y
-      ) > 5
-    ) {
-      var angel = Math.atan2(
-        this.player_target_coordinates.x - this.player_coordinates.x,
-        this.player_target_coordinates.y - this.player_coordinates.y
-      )
+    this.render_frame_player.update(function(sprite, angel) {
+      sprite.set_player_position({
+        x: sprite.player.x + Math.sin(angel) * 5,
+        y: sprite.player.y + Math.cos(angel) * 5,
+      })
+      gs_mmo_api.ws_change_player_position(
+        sprite.player.x,
+        sprite.player.y,
+      );
+    });
 
-      const leftDown = -1 * Math.PI / 4;
-      const leftTop = -3 * Math.PI / 4;
-      const rightTop = 3 * Math.PI / 4;
-      const rightDown = Math.PI / 4;
+    // if (
+    //   Math.hypot(
+    //     this.player_target_coordinates.x - this.player_coordinates.x,
+    //     this.player_target_coordinates.y - this.player_coordinates.y
+    //   ) > 5
+    // ) {
+    //   var angel = Math.atan2(
+    //     this.player_target_coordinates.x - this.player_coordinates.x,
+    //     this.player_target_coordinates.y - this.player_coordinates.y
+    //   )
 
-      if (angel >= rightDown && angel <= rightTop) {
-        this.render_frame_player.y = 100;
-      } else if (angel > leftTop && angel <= leftDown) {
-        this.render_frame_player.y = 50;
-      } else if (angel > leftDown && angel <= rightDown) {
-        this.render_frame_player.y = 0;
-      } else if (angel > rightTop || angel <= leftTop) {
-        this.render_frame_player.y = 150;
-      } else {
-        this.render_frame_player.y = 0;
-      }
-      const t = new Date().getTime();
-      if (t - this.render_frame_player.t > 100) { // every 10 frames
-        this.render_frame_player.x += this.render_frame_player.d;
-        if (this.render_frame_player.x >= 200) {
-          this.render_frame_player.x = 0;
-        }
-        this.render_frame_player.t = t;
-      }
+    //   const leftDown = -1 * Math.PI / 4;
+    //   const leftTop = -3 * Math.PI / 4;
+    //   const rightTop = 3 * Math.PI / 4;
+    //   const rightDown = Math.PI / 4;
 
-      // console.log(angel);
-      this.player_coordinates.x += parseInt(Math.sin(angel) * 5);
-      this.player_coordinates.y += parseInt(Math.cos(angel) * 5);
-      gs_mmo_api.ws_change_player_position(this.player_coordinates.x, this.player_coordinates.y);
-    } else {
-      this.render_frame_player = {
-        x: 0,
-        y: 0,
-        d: 50,
-        t: 0
-      }
-    }
+    //   if (angel >= rightDown && angel <= rightTop) {
+    //     this.render_frame_player.y = 100;
+    //   } else if (angel > leftTop && angel <= leftDown) {
+    //     this.render_frame_player.y = 50;
+    //   } else if (angel > leftDown && angel <= rightDown) {
+    //     this.render_frame_player.y = 0;
+    //   } else if (angel > rightTop || angel <= leftTop) {
+    //     this.render_frame_player.y = 150;
+    //   } else {
+    //     this.render_frame_player.y = 0;
+    //   }
+    //   const t = new Date().getTime();
+    //   if (t - this.render_frame_player.t > 100) { // every 10 frames
+    //     this.render_frame_player.x += this.render_frame_player.d;
+    //     if (this.render_frame_player.x >= 200) {
+    //       this.render_frame_player.x = 0;
+    //     }
+    //     this.render_frame_player.t = t;
+    //   }
+
+    //   // console.log(angel);
+    //   this.player_coordinates.x += parseInt(Math.sin(angel) * 5);
+    //   this.player_coordinates.y += parseInt(Math.cos(angel) * 5);
+    //   gs_mmo_api.ws_change_player_position(this.player_coordinates.x, this.player_coordinates.y);
+    // } else {
+    //   this.render_frame_player = {
+    //     x: 0,
+    //     y: 0,
+    //     d: 50,
+    //     t: 0
+    //   }
+    // }
   }
 
   update() {
@@ -457,14 +546,14 @@ class GameServerMMORender {
     this.ctx.fillStyle = 'black';
     this.ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
 
-    if (!this.player_coordinates) {
+    if (!this.render_frame_player.player) {
       this.draw_borders();
       return;
     }
 
     this.move_player();
-    this.topLeftRealX = this.player_coordinates.x - this.player_draw_coordinates.x;
-    this.topLeftRealY = this.player_coordinates.y - this.player_draw_coordinates.y;
+    this.topLeftRealX = this.render_frame_player.player.x - this.player_draw_coordinates.x;
+    this.topLeftRealY = this.render_frame_player.player.y - this.player_draw_coordinates.y;
 
     this.draw_background();
     this.draw_roads();
@@ -541,14 +630,14 @@ class GameServerMMORender {
       }
     }
 
-    // console.log(this.player_coordinates);
+    // console.log(this.render_frame_player.player);
 
-    if (this.player_coordinates) {
-      this.player_target_coordinates = {
-        x: this.player_coordinates.x + (x - this.player_draw_coordinates.x),
-        y: this.player_coordinates.y + (y - this.player_draw_coordinates.y),
+    if (this.render_frame_player.player) {
+      this.render_frame_player.target = {
+        x: this.render_frame_player.player.x + (x - this.player_draw_coordinates.x),
+        y: this.render_frame_player.player.y + (y - this.player_draw_coordinates.y),
       }
-      console.log(this.player_target_coordinates);
+      console.log(this.render_frame_player.target);
     }
   }
 
