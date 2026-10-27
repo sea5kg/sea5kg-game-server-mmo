@@ -371,11 +371,11 @@ void employ_web_server::web_socket_onmessage(const WebSocketChannelPtr &channel,
         it->second = row_db->secret;
     }
     // m_players[]
-    auto it = m_players.find(income_secret);
+    auto it = m_players.find(row_db->secret);
     if (it != m_players.end())
       player_ctx = it->second;
     else {
-      m_players[income_secret] = player_ctx;
+      m_players[row_db->secret] = player_ctx;
     }
 
     m_all_players.add_player(player_ctx);
