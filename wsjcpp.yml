@@ -57,10 +57,10 @@ resources:
       modified: 1792922186
       sha1: "4b014f1d417e236b6227ca5b52579937787ae01a"
     - filepath: "./data/html/js/game-server-mmo-render.js"
-      size: 19672
+      size: 19003
       pack-as: "text"
-      modified: 1793069194
-      sha1: "6a911360695f04a95ea63c488508fc568e6f5c16"
+      modified: 1793072449
+      sha1: "985579f255345744e1fded76aedcd34ad3040272"
     - filepath: "./data/html/js/game-server-mmo-api.js"
       size: 7490
       pack-as: "text"
