@@ -154,6 +154,11 @@ class GameServerMMORender {
     this.on_init_players = function (data) {
       if (data === undefined) return;
       console.log("Render, on_init_players", data);
+      const old_keys = Object.keys(self.__other_players);
+      for (var player_name of old_keys) {
+        delete self.__other_players[player_name];
+      }
+
       const keys = Object.keys(data["p"]);
       for (var player_name of keys) {
         if (player_name === self.player_name) {
