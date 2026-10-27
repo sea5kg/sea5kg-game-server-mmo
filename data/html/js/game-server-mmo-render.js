@@ -35,17 +35,18 @@ class GameServerMMOSpritePlayerMove {
     this.target.y = parseInt(data["y"], 10);
   }
 
-  update(fn) {
+  update(minimal_distance, fn) {
     if (
       Math.hypot(
         this.target.x - this.player.x,
         this.target.y - this.player.y
-      ) > 5
+      ) > minimal_distance
     ) {
       var angel = Math.atan2(
         this.target.x - this.player.x,
         this.target.y - this.player.y
       )
+      // console.log(angel);
 
       const leftDown = -1 * Math.PI / 4;
       const leftTop = -3 * Math.PI / 4;
@@ -153,7 +154,15 @@ class GameServerMMORender {
     this.on_init_players = function (data) {
       if (data === undefined) return;
       console.log("Render, on_init_players", data);
-      Object.assign(self.__other_players, data["p"]);
+      const keys = Object.keys(data["p"]);
+      for (var player_name of keys) {
+        if (player_name === self.player_name) {
+          continue;
+        }
+        self.__other_players[player_name] = new GameServerMMOSpritePlayerMove();
+        self.__other_players[player_name].set_player_position(data["p"][player_name])
+        self.__other_players[player_name].set_target_position(data["p"][player_name])
+      }
     }
 
     this.on_players_events = function (data) {
@@ -168,17 +177,16 @@ class GameServerMMORender {
         // MOVE_PLAYER = 3
 
         if (et == 1) { // ADD_PLAYER
-          self.__other_players[player_name] = {};
-          self.__other_players[player_name]["x"] = e["x"];
-          self.__other_players[player_name]["y"] = e["y"];
+          self.__other_players[player_name] = new GameServerMMOSpritePlayerMove();
+          self.__other_players[player_name].set_player_position(e)
+          self.__other_players[player_name].set_target_position(e)
         } else if (et == 2) { // REMOVE_PLAYER
           delete self.__other_players[player_name];
         } else if (et == 3) { // MOVE_PLAYER
-          self.__other_players[player_name]["x"] = e["x"];
-          self.__other_players[player_name]["y"] = e["y"];
+          self.__other_players[player_name].set_target_position(e)
         }
       }
-      const keys = Object.keys(self.__other_players);
+      // const keys = Object.keys(self.__other_players);
       // console.log("Render, on_players_events", keys);
     }
   }
@@ -453,19 +461,35 @@ class GameServerMMORender {
         if (key === this.player_name) {
           continue;
         }
-        var x = this.__other_players[key]["x"]
-        var y = this.__other_players[key]["y"]
+        // const minimal_distance = 5;
+        this.__other_players[key].update(0, function(sprite, angel) {
+          // sprite.set_player_position({
+          //   x: sprite.target.x,
+          //   y: sprite.target.y,
+          // })
+          var dx = (sprite.target.x - sprite.player.x) / 3;
+          var dy = (sprite.target.y - sprite.player.y) / 3;
 
-        // var draw_coordinates = {
-        //   x: (window.innerWidth - this.left_panel_width) / 2,
-        //   y: (window.innerHeight - this.bottom_panel_height) / 2
-        // };
+          if (dx < 1 && dy < 1) { // finished state
+            dx = sprite.target.x - sprite.player.x;
+            dy = sprite.target.y - sprite.player.y;
+          }
+
+          sprite.set_player_position({
+            x: sprite.player.x + dx, // Math.sin(angel) * minimal_distance,
+            y: sprite.player.y + dy, // Math.cos(angel) * minimal_distance,
+          })
+        })
+        var x = this.__other_players[key].player.x
+        var y = this.__other_players[key].player.y
+
+        // var x = this.__other_players[key].target.x
+        // var y = this.__other_players[key].target.y
 
         this.ctx.drawImage(
           this.cacheImages[texturePlayer].img,
-          // TODO specify for each player
-          this.render_frame_player.sprite.x,
-          this.render_frame_player.sprite.y,
+          this.__other_players[key].sprite.x,
+          this.__other_players[key].sprite.y,
           50, 50,
           x - this.topLeftRealX - 25,
           y - this.topLeftRealY - 45,
@@ -479,65 +503,17 @@ class GameServerMMORender {
     if (!this.render_frame_player.player) {
       return;
     }
-    this.render_frame_player.update(function(sprite, angel) {
+    const minimal_distance = 5;
+    this.render_frame_player.update(minimal_distance, function(sprite, angel) {
       sprite.set_player_position({
-        x: sprite.player.x + Math.sin(angel) * 5,
-        y: sprite.player.y + Math.cos(angel) * 5,
+        x: sprite.player.x + Math.sin(angel) * minimal_distance,
+        y: sprite.player.y + Math.cos(angel) * minimal_distance,
       })
       gs_mmo_api.ws_change_player_position(
         sprite.player.x,
         sprite.player.y,
       );
     });
-
-    // if (
-    //   Math.hypot(
-    //     this.player_target_coordinates.x - this.player_coordinates.x,
-    //     this.player_target_coordinates.y - this.player_coordinates.y
-    //   ) > 5
-    // ) {
-    //   var angel = Math.atan2(
-    //     this.player_target_coordinates.x - this.player_coordinates.x,
-    //     this.player_target_coordinates.y - this.player_coordinates.y
-    //   )
-
-    //   const leftDown = -1 * Math.PI / 4;
-    //   const leftTop = -3 * Math.PI / 4;
-    //   const rightTop = 3 * Math.PI / 4;
-    //   const rightDown = Math.PI / 4;
-
-    //   if (angel >= rightDown && angel <= rightTop) {
-    //     this.render_frame_player.y = 100;
-    //   } else if (angel > leftTop && angel <= leftDown) {
-    //     this.render_frame_player.y = 50;
-    //   } else if (angel > leftDown && angel <= rightDown) {
-    //     this.render_frame_player.y = 0;
-    //   } else if (angel > rightTop || angel <= leftTop) {
-    //     this.render_frame_player.y = 150;
-    //   } else {
-    //     this.render_frame_player.y = 0;
-    //   }
-    //   const t = new Date().getTime();
-    //   if (t - this.render_frame_player.t > 100) { // every 10 frames
-    //     this.render_frame_player.x += this.render_frame_player.d;
-    //     if (this.render_frame_player.x >= 200) {
-    //       this.render_frame_player.x = 0;
-    //     }
-    //     this.render_frame_player.t = t;
-    //   }
-
-    //   // console.log(angel);
-    //   this.player_coordinates.x += parseInt(Math.sin(angel) * 5);
-    //   this.player_coordinates.y += parseInt(Math.cos(angel) * 5);
-    //   gs_mmo_api.ws_change_player_position(this.player_coordinates.x, this.player_coordinates.y);
-    // } else {
-    //   this.render_frame_player = {
-    //     x: 0,
-    //     y: 0,
-    //     d: 50,
-    //     t: 0
-    //   }
-    // }
   }
 
   update() {
