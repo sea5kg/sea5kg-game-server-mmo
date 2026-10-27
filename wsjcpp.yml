@@ -57,20 +57,20 @@ resources:
       modified: 1792922186
       sha1: "4b014f1d417e236b6227ca5b52579937787ae01a"
     - filepath: "./data/html/js/game-server-mmo-render.js"
-      size: 19003
+      size: 19162
       pack-as: "text"
-      modified: 1793072449
-      sha1: "985579f255345744e1fded76aedcd34ad3040272"
+      modified: 1793119638
+      sha1: "85f3fc3b0e58559d3be2b11dca3a1799c6733563"
     - filepath: "./data/html/js/game-server-mmo-api.js"
-      size: 7490
+      size: 7541
       pack-as: "text"
-      modified: 1792928831
-      sha1: "69202d78eae9300fe274c5cd7bc5778f9c8865c3"
+      modified: 1793117797
+      sha1: "d88bb752d9c6c11040e965d66fdbdaff1ae8ebb9"
     - filepath: "./data/html/js/index.js"
-      size: 3082
+      size: 4336
       pack-as: "text"
-      modified: 1792922186
-      sha1: "f38c76d46020b1b071c6a10217e3cc972cefc4de"
+      modified: 1793118233
+      sha1: "45494514d4fd652afa61f9034d64d152aa8437be"
     - filepath: "./data/html/img/user-sprite.png"
       size: 59404
       pack-as: "binary"
@@ -297,10 +297,10 @@ resources:
       modified: 1792922186
       sha1: "8c94f6f53b1cea470a8e1935262dbab58c8b6f2d"
     - filepath: "./data/html/index.html"
-      size: 1088
+      size: 1378
       pack-as: "text"
-      modified: 1792922186
-      sha1: "f29c0dbc492db025e4cfe6b45ce01921b96fd8eb"
+      modified: 1793118273
+      sha1: "89f0d99695cfd8b3be969af3110366b711d02c09"
     - filepath: "./data/html/logo-70x70.png"
       size: 27286
       pack-as: "binary"

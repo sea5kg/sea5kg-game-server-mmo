@@ -17,13 +17,13 @@ const std::string &RES___data_html_index_html_pathffd2bc::getPackAs() const {
 // ---------------------------------------------------------------------
 
 int RES___data_html_index_html_pathffd2bc::getBufferSize() const {
-  return 1088;
+  return 1378;
 }
 
 // ---------------------------------------------------------------------
 
 const char *RES___data_html_index_html_pathffd2bc::getBuffer() const {
-  static const std::string sRet = "" // size: 1088
+  static const std::string sRet = "" // size: 1378
     "<!DOCTYPE html>\n"
     "<html xmlns = \"http://www.w3.org/1999/xhtml\" lang=\"en\">\n"
     "<head>\n"
@@ -43,21 +43,41 @@ const char *RES___data_html_index_html_pathffd2bc::getBuffer() const {
     "}\n"
     "\n"
     ".ws-status {\n"
+    "    display: table;\n"
     "    position: fixed;\n"
+    "    width: 100%;\n"
+    "    height: 100%;\n"
     "    padding: 4px 8px;\n"
     "    border-radius: 4px;\n"
-    "    font-size: 13px;\n"
+    "    text-align: center;\n"
+    "    font-size: 40px;\n"
+    "    font-weight: bold;\n"
     "    z-index: 1000;\n"
+    "    background: rgba(0, 0, 0, 0.95);\n"
+    "    color: #721c24;\n"
     "}\n"
-    ".ws-status.connecting   { background: #fff3cd; color: #856404; }\n"
-    ".ws-status.connected    { background: #d4edda; color: #155724; }\n"
-    ".ws-status.disconnected { background: #f8d7da; color: #721c24; }\n"
+    ".ws-status.connecting {\n"
+    "    color: #ffffff;\n"
+    "}\n"
+    ".ws-status.connected {\n"
+    "    display: none;\n"
+    "}\n"
+    ".ws-status.disconnected {\n"
+    "    color: #dd061b;\n"
+    "}\n"
+    ".ws-status-text {\n"
+    "    height: 100%;\n"
+    "    display: table-cell;\n"
+    "    vertical-align: middle;\n"
+    "}\n"
     "\n"
     "    </style>\n"
     "</head>\n"
     "<body>\n"
     "    <canvas class=\"game-window-render\" width=\"1000px\" height=\"500px\" id=\"game_window_render\"></canvas>\n"
-    "    <div id=\"ws-status\">Connecting…</div>\n"
+    "    <div class=\"ws-status connecting\" id=\"ws_status\">\n"
+    "        <div class=\"ws-status-text\" id=\"ws_status_text\">Connecting...</div>\n"
+    "    </div>\n"
     "    <script src=\"./js/game-server-mmo-api.js?v=1\"></script>\n"
     "    <script src=\"./js/game-server-mmo-render.js?v=1\"></script>\n"
     "    <script src=\"./js/index.js?v=1\"></script>\n"

@@ -17,13 +17,13 @@ const std::string &RES___data_html_js_game_server_mmo_render_js_path9d26fc::getP
 // ---------------------------------------------------------------------
 
 int RES___data_html_js_game_server_mmo_render_js_path9d26fc::getBufferSize() const {
-  return 19003;
+  return 19162;
 }
 
 // ---------------------------------------------------------------------
 
 const char *RES___data_html_js_game_server_mmo_render_js_path9d26fc::getBuffer() const {
-  static const std::string sRet = "" // size: 19003
+  static const std::string sRet = "" // size: 19162
     "\n"
     "MENU_BTN_STATE_NO = 0;\n"
     "MENU_BTN_STATE_SELECTED = 50;\n"
@@ -180,6 +180,11 @@ const char *RES___data_html_js_game_server_mmo_render_js_path9d26fc::getBuffer()
     "    this.on_init_players = function (data) {\n"
     "      if (data === undefined) return;\n"
     "      console.log(\"Render, on_init_players\", data);\n"
+    "      const old_keys = Object.keys(self.__other_players);\n"
+    "      for (var player_name of old_keys) {\n"
+    "        delete self.__other_players[player_name];\n"
+    "      }\n"
+    "\n"
     "      const keys = Object.keys(data[\"p\"]);\n"
     "      for (var player_name of keys) {\n"
     "        if (player_name === self.player_name) {\n"
