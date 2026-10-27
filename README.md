@@ -38,7 +38,7 @@ version: '3'
 
 services:
   ctf01d_jury:
-    image: sea5kg/sea5kg-game-server-mmo:v0.0.1
+    image: sea5kg/sea5kg-game-server-mmo:latest
     volumes:
       - "./gs_mmo_data:/data"
     environment:
@@ -49,7 +49,7 @@ services:
       - "11223"
     ports:
       - "11223:11223"
-    # restart: always
+    restart: always
     networks:
       - sea5kg_game_server_mmo_net
 
@@ -64,6 +64,7 @@ networks:
 Build
 ```
 $ docker build --tag sea5kg/sea5kg-game-server-mmo:v0.0.1 .
+$ docker tag sea5kg/sea5kg-game-server-mmo:v0.0.1 sea5kg/sea5kg-game-server-mmo:latest
 ```
 
 Run
@@ -74,8 +75,6 @@ $ docker run --rm -it -p -v `pwd`/data:/opt/src/data 1234:1234 sea5kg/game-serve
 ### Helpers
 
 ```
-docker build --rm --tag sea5kg/sea5kg-game-server-mmo:build-environment-2026-10-28 -f Dockerfile.build-environment .
-docker build --rm --tag sea5kg/sea5kg-game-server-mmo:release-environment-2026-10-28 -f Dockerfile.release-environment .
+$ docker build --rm --tag sea5kg/sea5kg-game-server-mmo:build-environment-2026-10-28 -f Dockerfile.build-environment .
+$ docker build --rm --tag sea5kg/sea5kg-game-server-mmo:release-environment-2026-10-28 -f Dockerfile.release-environment .
 ```
-
-
