@@ -17,21 +17,41 @@ body {
 }
 
 .ws-status {
+    display: table;
     position: fixed;
+    width: 100%;
+    height: 100%;
     padding: 4px 8px;
     border-radius: 4px;
-    font-size: 13px;
+    text-align: center;
+    font-size: 40px;
+    font-weight: bold;
     z-index: 1000;
+    background: rgba(0, 0, 0, 0.95);
+    color: #721c24;
 }
-.ws-status.connecting   { background: #fff3cd; color: #856404; }
-.ws-status.connected    { background: #d4edda; color: #155724; }
-.ws-status.disconnected { background: #f8d7da; color: #721c24; }
+.ws-status.connecting {
+    color: #ffffff;
+}
+.ws-status.connected {
+    display: none;
+}
+.ws-status.disconnected {
+    color: #dd061b;
+}
+.ws-status-text {
+    height: 100%;
+    display: table-cell;
+    vertical-align: middle;
+}
 
     </style>
 </head>
 <body>
     <canvas class="game-window-render" width="1000px" height="500px" id="game_window_render"></canvas>
-    <div id="ws-status">Connecting…</div>
+    <div class="ws-status connecting" id="ws_status">
+        <div class="ws-status-text" id="ws_status_text">Connecting...</div>
+    </div>
     <script src="./js/game-server-mmo-api.js?v=1"></script>
     <script src="./js/game-server-mmo-render.js?v=1"></script>
     <script src="./js/index.js?v=1"></script>

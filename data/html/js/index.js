@@ -12,6 +12,8 @@ document.addEventListener("keydown", event => {
   }
 });
 
+window.gs_mmo_api_interval = null;
+window.gs_mmo_api_reconnect_countdown = 0;
 window.gs_mmo_api = new GameServerMMOApi();
 
 function load_first_map(player_coordinates) {
@@ -40,6 +42,12 @@ function load_first_map(player_coordinates) {
   gs_mmo_render.update();
 }
 
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 document.addEventListener('DOMContentLoaded', function () {
   console.log("Content loaded");
 
@@ -54,19 +62,41 @@ document.addEventListener('DOMContentLoaded', function () {
   // })
 
   window.gs_mmo_api.on_ws_state((state) => {
-    const el = document.getElementById("ws-status");
+    console.log("on_ws_state ", state);
+    if (!state) {
+      return;
+    }
+    const el = document.getElementById("ws_status");
+    const el_text = document.getElementById("ws_status_text");
+    el.classList = "ws-status";
     switch (state) {
       case "connecting":
-        el.textContent = "Connecting…";
-        el.className = "ws-status connecting";
+        el.classList.add("connecting");
+        el_text.textContent = "Connecting...";
         break;
       case "connected":
-        el.textContent = "Connected";
-        el.className = "ws-status connected";
+        el_text.textContent = "connected";
+        el.classList.add("connected");
         break;
       case "disconnected":
-        el.textContent = "Disconnected";
-        el.className = "ws-status disconnected";
+        window.gs_mmo_api_reconnect_countdown = getRandomInt(2, 15);
+        el_text.innerHTML = "Disconnected.<br/><br/><small>Reconnect after " + window.gs_mmo_api_reconnect_countdown + " sec</small>";
+        el.classList.add("disconnected");
+        if (window.gs_mmo_api_interval) {
+          clearInterval(window.gs_mmo_api_interval);
+        }
+        window.gs_mmo_api_interval = setInterval(function () {
+          if (window.gs_mmo_api_reconnect_countdown > 0) {
+            window.gs_mmo_api_reconnect_countdown--;
+            el_text.innerHTML = "Disconnected.<br/><br/><small>Reconnect after " + window.gs_mmo_api_reconnect_countdown + " sec</small>";
+            if (window.gs_mmo_api_reconnect_countdown > 0)
+              return;
+          }
+          if (window.gs_mmo_api_reconnect_countdown == 0) {
+            window.gs_mmo_api.reconnect_1500();
+            clearInterval(window.gs_mmo_api_interval);
+          }
+        }, 1000);
         break;
     }
   });

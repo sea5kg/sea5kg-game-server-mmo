@@ -36,86 +36,98 @@ class GameServerMMOApi {
     this.base_url = location.protocol + "//" + location.host;
     this.ws_req_id = 0;
     this.ws_requests = {};
-    this.__ws_state = new GameServerMMOApiEventListener("connecting"); // "connecting" | "connected" | "disconnected"
+    this.__ws_state = new GameServerMMOApiEventListener(""); // "connecting" | "connected" | "disconnected"
     // this.__init_player = new GameServerMMOApiEventListener({"id": "", "x": 0, "y": 0});
     this.__init_player = new GameServerMMOApiEventListener();
     this.__init_players = new GameServerMMOApiEventListener();
     this.__players_events = new GameServerMMOApiEventListener();
+    this.reconnect_1500();
+  }
+
+  reconnect_1500() {
+    var self = this;
+    this._set_ws_state("connecting");
+    setTimeout(function() {
+      self.connect();
+    }, 1500);
+  }
+
+  connect() {
+    if (!"WebSocket" in window) {
+      this.error = "Not found WebSocket!";
+      self._set_ws_state("disconnected");
+      return false;
+    }
 
     var self = this;
+    this._set_ws_state("connecting");
+    this.ws = new WebSocket("ws://" + location.host + "/ws-api/");
 
-    if ("WebSocket" in window) {
-      this.ws = new WebSocket("ws://" + location.host + "/ws-api/");
+    this.ws.onopen = function () {
+      console.log("open");
+      self._set_ws_state("connected");
+      // still "connecting" until the auth response comes back
+      var auth_params = {};
+      if (sessionStorage.getItem("my-secret")) {
+        auth_params["secret"] = sessionStorage.getItem("my-secret");
+      }
+      self.ws.send(JSON.stringify({
+        "id": "auth",
+        "method": "auth",
+        "params": auth_params
+      }));
 
-      this.ws.onopen = function () {
-        console.log("open");
+      // self.ws.send(JSON.stringify({ "method": "hello" }));
+      // if (!localStorage.getItem("last-room")) {
+      //   self.ws.send(JSON.stringify({ "method": "goto_room" }));
+      // }
+    };
+
+    this.ws.onmessage = function (ev) {
+      var received_msg = ev.data;
+      // console.log("received_msg:", received_msg);
+      var resp = JSON.parse(received_msg);
+      var msg_id = resp["id"];
+
+      if (msg_id == "auth") {
+        if (resp["result"]["secret"] !== undefined) {
+          sessionStorage.setItem("my-secret", resp["result"]["secret"]);
+          delete resp["result"]["secret"];
+        }
+        self.__init_player.set_data(resp["result"])
         self._set_ws_state("connected");
-        // still "connecting" until the auth response comes back
-        var auth_params = {};
-        if (sessionStorage.getItem("my-secret")) {
-          auth_params["secret"] = sessionStorage.getItem("my-secret");
+      }
+
+      if (self.ws_requests[msg_id]) {
+        self.ws_requests[msg_id].resolve(resp["result"]);
+        delete self.ws_requests[msg_id];
+      }
+      if (resp["method"] !== undefined) {
+        if (resp["method"] === "init_players") {
+          self.__init_players.set_data(resp["params"]);
+        } else if (resp["method"] === "players_events") {
+          self.__players_events.set_data(resp["params"]);
+        } else {
+          console.warn("No handled method", resp["method"]);
         }
-        self.ws.send(JSON.stringify({
-          "id": "auth",
-          "method": "auth",
-          "params": auth_params
-        }));
+      }
+      console.log("received websocket message: " + received_msg);
+    };
 
-        // self.ws.send(JSON.stringify({ "method": "hello" }));
-        // if (!localStorage.getItem("last-room")) {
-        //   self.ws.send(JSON.stringify({ "method": "goto_room" }));
-        // }
-      };
+    this.ws.onclose = function () {
+      console.log("closed");
+      self._set_ws_state("disconnected");
+    };
 
-      this.ws.onmessage = function (ev) {
-        var received_msg = ev.data;
-        // console.log("received_msg:", received_msg);
-        var resp = JSON.parse(received_msg);
-        var msg_id = resp["id"];
-
-        if (msg_id == "auth") {
-          if (resp["result"]["secret"] !== undefined) {
-            sessionStorage.setItem("my-secret", resp["result"]["secret"]);
-            delete resp["result"]["secret"];
-          }
-          self.__init_player.set_data(resp["result"])
-          self._set_ws_state("connected");
-        }
-
-        if (self.ws_requests[msg_id]) {
-          self.ws_requests[msg_id].resolve(resp["result"]);
-          delete self.ws_requests[msg_id];
-        }
-        if (resp["method"] !== undefined) {
-          if (resp["method"] === "init_players") {
-            self.__init_players.set_data(resp["params"]);
-          } else if (resp["method"] === "players_events") {
-            self.__players_events.set_data(resp["params"]);
-          } else {
-            console.warn("No handled method", resp["method"]);
-          }
-        }
-        console.log("received websocket message: " + received_msg);
-      };
-
-      this.ws.onclose = function () {
-        console.log("closed");
-        self._set_ws_state("disconnected");
-      };
-
-      this.ws.onerror = function () {
-        console.log("ws error");
-        self._set_ws_state("disconnected");
-      };
-    } else {
-      console.log("not found WebSocket!");
-      this.__ws_state.set_data("disconnected")
-    }
+    this.ws.onerror = function () {
+      console.log("ws-error");
+      self._set_ws_state("disconnected");
+    };
   }
 
   _set_ws_state(state) {
     if (this.__ws_state.get_last_data() === state) return;
-    this.__ws_state.set_data(state)
+    this.__ws_state.set_data(state);
   }
 
   on_ws_state(fn) {
@@ -199,7 +211,7 @@ class GameServerMMOApi {
     xhr.onload = function () {
       // alert(`Загружено: ${xhr.status} ${xhr.response}`);
     };
-    xhr.onerror = function () { // происходит, только когда запрос совсем не получилось выполнить
+    xhr.onerror = function () {
       console.error('Ошибка соединения');
       d.reject("error");
     };
@@ -231,11 +243,12 @@ class GameServerMMOApi {
     var defer = d || this.promise();
     var _params = params || {};
     if (this.__ws_state.get_last_data() !== "connected") {
-      console.warn("No connection. retry after 100ms");
-      var self = this;
-      setTimeout(function () {
-        self.ws_request(methodname, _params, defer);
-      }, 100);
+       console.error("No connection.");
+      // console.warn("No connection. retry after 100ms");
+      // var self = this;
+      // setTimeout(function () {
+      //   self.ws_request(methodname, _params, defer);
+      // }, 100);
     } else {
       console.log(methodname, params);
       var new_id = this.ws_req_id++;
