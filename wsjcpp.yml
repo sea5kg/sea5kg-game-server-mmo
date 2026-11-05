@@ -86,11 +86,6 @@ resources:
       pack-as: "binary"
       modified: 1792922186
       sha1: "bb04e703ec43d8ed7274bcf0a4537953e47d3be6"
-    - filepath: "./data/html/img/player-sprite-50x50.png"
-      size: 6531
-      pack-as: "binary"
-      modified: 1792922186
-      sha1: "1e50f0d5ac8455d633e190cba781f8f57292ed2a"
     - filepath: "./data/html/img/menu-build.png"
       size: 921
       pack-as: "binary"

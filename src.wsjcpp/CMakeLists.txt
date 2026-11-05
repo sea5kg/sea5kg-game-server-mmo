@@ -60,8 +60,6 @@ list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/wsjcpp_resources/__data_htm
 list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/wsjcpp_resources/__data_html_img_borders0_png_path2aaa3e.cpp")
 list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/wsjcpp_resources/__data_html_img_menu_modes_png_path37cc8d.h")
 list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/wsjcpp_resources/__data_html_img_menu_modes_png_path37cc8d.cpp")
-list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/wsjcpp_resources/__data_html_img_player_sprite_50x50_png_pathd2a798.h")
-list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/wsjcpp_resources/__data_html_img_player_sprite_50x50_png_pathd2a798.cpp")
 list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/wsjcpp_resources/__data_html_img_menu_build_png_path7e2329.h")
 list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/wsjcpp_resources/__data_html_img_menu_build_png_path7e2329.cpp")
 list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/wsjcpp_resources/__data_html_img_home0_100x100_png_path9c893c.h")
