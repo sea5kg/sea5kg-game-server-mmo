@@ -3,6 +3,15 @@ MENU_BTN_STATE_NO = 0;
 MENU_BTN_STATE_SELECTED = 50;
 MENU_BTN_STATE_PRESSED = 100;
 
+DIRECTION_DOWN = 0;
+DIRECTION_LEFT = 1;
+DIRECTION_RIGHT = 2;
+DIRECTION_TOP = 3;
+
+const ANGLE_LEFT_DOWN = -1 * Math.PI / 4;
+const ANGLE_LEFT_TOP = -3 * Math.PI / 4;
+const ANGLE_RIGHT_TOP = 3 * Math.PI / 4;
+const ANGLE_RIGHT_DOWN = Math.PI / 4;
 
 class GameServerMMOSpritePlayerMove {
   constructor() {
@@ -15,6 +24,8 @@ class GameServerMMOSpritePlayerMove {
       y: 0,
     };
     this.sprite = { x: 0, y: 0, d: 50, t: 0 };
+
+    this.directionOfMovement = DIRECTION_DOWN;
   }
 
   set_player_position(data) {
@@ -35,53 +46,71 @@ class GameServerMMOSpritePlayerMove {
     this.target.y = parseInt(data["y"], 10);
   }
 
+  calculate_direction(angle) {
+    if (angle >= ANGLE_RIGHT_DOWN && angle <= ANGLE_RIGHT_TOP) {
+      return DIRECTION_RIGHT;
+    } else if (angle > ANGLE_LEFT_TOP && angle <= ANGLE_LEFT_DOWN) {
+      return DIRECTION_LEFT;
+    } else if (angle > ANGLE_LEFT_DOWN && angle <= ANGLE_RIGHT_DOWN) {
+      return DIRECTION_DOWN;
+    } else if (angle > ANGLE_RIGHT_TOP || angle <= ANGLE_LEFT_TOP) {
+      return DIRECTION_TOP;
+    }
+    return DIRECTION_DOWN;
+  }
+
+  update_animation_sprite_by_time() {
+    const t = new Date().getTime();
+    if (t - this.sprite.t > 100) { // every 10 frames
+      this.sprite.x += this.sprite.d;
+      if (this.sprite.x >= 200) {
+        this.sprite.x = 0;
+      }
+      this.sprite.t = t;
+    }
+  }
+
+  get_distance() {
+    return Math.hypot(
+      this.target.x - this.player.x,
+      this.target.y - this.player.y
+    )
+  }
+
+  get_angle() {
+    var dest_len = this.get_distance()
+    if (dest_len < 0) {
+      console.log(dest_len);
+    }
+    return Math.atan2(
+      this.target.x - this.player.x,
+      this.target.y - this.player.y
+    )
+  }
+
   update(minimal_distance, fn) {
-    if (
-      Math.hypot(
-        this.target.x - this.player.x,
-        this.target.y - this.player.y
-      ) > minimal_distance
-    ) {
-      var angel = Math.atan2(
-        this.target.x - this.player.x,
-        this.target.y - this.player.y
-      )
-      // console.log(angel);
-
-      const leftDown = -1 * Math.PI / 4;
-      const leftTop = -3 * Math.PI / 4;
-      const rightTop = 3 * Math.PI / 4;
-      const rightDown = Math.PI / 4;
-
-      if (angel >= rightDown && angel <= rightTop) {
-        this.sprite.y = 100;
-      } else if (angel > leftTop && angel <= leftDown) {
-        this.sprite.y = 50;
-      } else if (angel > leftDown && angel <= rightDown) {
-        this.sprite.y = 0;
-      } else if (angel > rightTop || angel <= leftTop) {
-        this.sprite.y = 150;
-      } else {
-        this.sprite.y = 0;
-      }
-      const t = new Date().getTime();
-      if (t - this.sprite.t > 100) { // every 10 frames
-        this.sprite.x += this.sprite.d;
-        if (this.sprite.x >= 200) {
-          this.sprite.x = 0;
-        }
-        this.sprite.t = t;
-      }
-
-      if (fn) {
-        fn(this, angel);
-      }
-    } else {
+    var dest_len = this.get_distance();
+    // reset.
+    if (dest_len < minimal_distance && minimal_distance > 0) {
+      this.target.x = this.player.x;
+      this.target.y = this.player.y;
+      console.log("reset sprite. minimal_distance = ", minimal_distance, "; dest_len = ", dest_len)
       this.sprite = {
         x: 0,
         y: 0,
         d: 50,
         t: 0
+      }
+      return;
+    }
+
+    if (dest_len > minimal_distance) {
+      var angle = this.get_angle(dest_len);
+      this.directionOfMovement = this.calculate_direction(angle);
+      this.sprite.y = this.directionOfMovement * 50;
+      this.update_animation_sprite_by_time();
+      if (fn) {
+        fn(this, angle);
       }
     }
   }
@@ -467,7 +496,7 @@ class GameServerMMORender {
           continue;
         }
         // const minimal_distance = 5;
-        this.__other_players[key].update(0, function(sprite, angel) {
+        this.__other_players[key].update(0, function (sprite, angle) {
           // sprite.set_player_position({
           //   x: sprite.target.x,
           //   y: sprite.target.y,
@@ -481,8 +510,8 @@ class GameServerMMORender {
           }
 
           sprite.set_player_position({
-            x: sprite.player.x + dx, // Math.sin(angel) * minimal_distance,
-            y: sprite.player.y + dy, // Math.cos(angel) * minimal_distance,
+            x: sprite.player.x + dx, // Math.sin(angle) * minimal_distance,
+            y: sprite.player.y + dy, // Math.cos(angle) * minimal_distance,
           })
         })
         var x = this.__other_players[key].player.x
@@ -509,10 +538,10 @@ class GameServerMMORender {
       return;
     }
     const minimal_distance = 5;
-    this.render_frame_player.update(minimal_distance, function(sprite, angel) {
+    this.render_frame_player.update(minimal_distance, function (sprite, angle) {
       sprite.set_player_position({
-        x: sprite.player.x + Math.sin(angel) * minimal_distance,
-        y: sprite.player.y + Math.cos(angel) * minimal_distance,
+        x: sprite.player.x + Math.sin(angle) * minimal_distance,
+        y: sprite.player.y + Math.cos(angle) * minimal_distance,
       })
       gs_mmo_api.ws_change_player_position(
         sprite.player.x,
