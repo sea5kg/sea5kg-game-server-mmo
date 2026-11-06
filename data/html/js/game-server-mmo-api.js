@@ -47,7 +47,7 @@ class GameServerMMOApi {
   reconnect_1500() {
     var self = this;
     this._set_ws_state("connecting");
-    setTimeout(function() {
+    setTimeout(function () {
       self.connect();
     }, 1500);
   }
@@ -209,10 +209,10 @@ class GameServerMMOApi {
   request(path, d) {
     var xhr = new XMLHttpRequest()
     xhr.onload = function () {
-      // alert(`Загружено: ${xhr.status} ${xhr.response}`);
+      // alert(`Downloaded: ${xhr.status} ${xhr.response}`);
     };
     xhr.onerror = function () {
-      console.error('Ошибка соединения');
+      console.error('Error of connection');
       d.reject("error");
     };
     xhr.onreadystatechange = function () {
@@ -243,7 +243,7 @@ class GameServerMMOApi {
     var defer = d || this.promise();
     var _params = params || {};
     if (this.__ws_state.get_last_data() !== "connected") {
-       console.error("No connection.");
+      console.error("No connection.");
       // console.warn("No connection. retry after 100ms");
       // var self = this;
       // setTimeout(function () {
@@ -262,8 +262,13 @@ class GameServerMMOApi {
     return defer;
   }
 
-  ws_change_player_position(x, y) {
-    return this.ws_request("change_player_position", { "x": parseInt(x, 10), "y": parseInt(y, 10) });
+  ws_move_player(x, y, direction_of_movement, animation) {
+    return this.ws_request("mv_player", {
+      "x": parseInt(x, 10),
+      "y": parseInt(y, 10),
+      "dm": direction_of_movement,
+      "a": animation,
+    });
   }
 
   ws_get_player_position() {

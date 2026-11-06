@@ -17,13 +17,13 @@ const std::string &RES___data_html_js_game_server_mmo_api_js_path4fdaf1::getPack
 // ---------------------------------------------------------------------
 
 int RES___data_html_js_game_server_mmo_api_js_path4fdaf1::getBufferSize() const {
-  return 7541;
+  return 7603;
 }
 
 // ---------------------------------------------------------------------
 
 const char *RES___data_html_js_game_server_mmo_api_js_path4fdaf1::getBuffer() const {
-  static const std::string sRet = "" // size: 7541
+  static const std::string sRet = "" // size: 7603
     "\n"
     "// TODO get variables from server\n"
     "VVAPI_LAYER_BACKGROUND = 1;\n"
@@ -73,7 +73,7 @@ const char *RES___data_html_js_game_server_mmo_api_js_path4fdaf1::getBuffer() co
     "  reconnect_1500() {\n"
     "    var self = this;\n"
     "    this._set_ws_state(\"connecting\");\n"
-    "    setTimeout(function() {\n"
+    "    setTimeout(function () {\n"
     "      self.connect();\n"
     "    }, 1500);\n"
     "  }\n"
@@ -235,10 +235,10 @@ const char *RES___data_html_js_game_server_mmo_api_js_path4fdaf1::getBuffer() co
     "  request(path, d) {\n"
     "    var xhr = new XMLHttpRequest()\n"
     "    xhr.onload = function () {\n"
-    "      // alert(`Загружено: ${xhr.status} ${xhr.response}`);\n"
+    "      // alert(`Downloaded: ${xhr.status} ${xhr.response}`);\n"
     "    };\n"
     "    xhr.onerror = function () {\n"
-    "      console.error('Ошибка соединения');\n"
+    "      console.error('Error of connection');\n"
     "      d.reject(\"error\");\n"
     "    };\n"
     "    xhr.onreadystatechange = function () {\n"
@@ -269,7 +269,7 @@ const char *RES___data_html_js_game_server_mmo_api_js_path4fdaf1::getBuffer() co
     "    var defer = d || this.promise();\n"
     "    var _params = params || {};\n"
     "    if (this.__ws_state.get_last_data() !== \"connected\") {\n"
-    "       console.error(\"No connection.\");\n"
+    "      console.error(\"No connection.\");\n"
     "      // console.warn(\"No connection. retry after 100ms\");\n"
     "      // var self = this;\n"
     "      // setTimeout(function () {\n"
@@ -288,8 +288,13 @@ const char *RES___data_html_js_game_server_mmo_api_js_path4fdaf1::getBuffer() co
     "    return defer;\n"
     "  }\n"
     "\n"
-    "  ws_change_player_position(x, y) {\n"
-    "    return this.ws_request(\"change_player_position\", { \"x\": parseInt(x, 10), \"y\": parseInt(y, 10) });\n"
+    "  ws_move_player(x, y, direction_of_movement, animation) {\n"
+    "    return this.ws_request(\"mv_player\", {\n"
+    "      \"x\": parseInt(x, 10),\n"
+    "      \"y\": parseInt(y, 10),\n"
+    "      \"dm\": direction_of_movement,\n"
+    "      \"a\": animation,\n"
+    "    });\n"
     "  }\n"
     "\n"
     "  ws_get_player_position() {\n"

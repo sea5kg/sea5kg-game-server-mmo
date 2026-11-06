@@ -50,7 +50,8 @@
 
 namespace gs_mmo {
 
-player_context::player_context() : m_name(""), m_x(0), m_y(0) {
+player_context::player_context() : m_name(""), m_x(0), m_y(0), m_direction_of_movement(0) {
+  m_animation = nlohmann::json::object();
   updated();
 }
 
@@ -80,9 +81,35 @@ int player_context::y() const {
   return m_y;
 }
 
+int player_context::direction_of_movement() const {
+  return m_direction_of_movement;
+}
+
+void player_context::update_from_json(const nlohmann::json &params) {
+  m_x = params["x"];
+  m_y = params["y"];
+  if (params.contains("dm")) {
+    m_direction_of_movement = params["dm"];
+  }
+  if (params.contains("a")) {
+    m_animation = params["a"];
+  }
+  updated();
+}
+
 void player_context::update_position(int x, int y) {
   m_x = x;
   m_y = y;
+  updated();
+}
+
+void player_context::update_direction_of_movement(int dm) {
+  m_direction_of_movement = dm;
+  updated();
+}
+
+void player_context::update_animation(const nlohmann::json &a) {
+  m_animation = a;
   updated();
 }
 
@@ -91,12 +118,16 @@ nlohmann::json player_context::to_json() const {
   ret["n"] = m_name;
   ret["x"] = m_x;
   ret["y"] = m_y;
+  ret["dm"] = m_direction_of_movement;
+  ret["a"] = m_animation;
   return ret;
 }
 
 void player_context::update_position_in_json(nlohmann::json &j) const {
   j["x"] = m_x;
   j["y"] = m_y;
+  j["dm"] = m_direction_of_movement;
+  j["a"] = m_animation;
 }
 
 long player_context::get_last_updated() const {

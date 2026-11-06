@@ -324,15 +324,13 @@ void employ_web_server::web_socket_onmessage(const WebSocketChannelPtr &channel,
   std::string sMethod = j["method"];
   if (sMethod == "hello") {
     // nothing
-  } else if (sMethod == "change_player_position") {
+  } else if (sMethod == "mv_player") {
     // std::string tkn = m_connected_users.find(ch_ptr)->second;
     // if (player_ctx.id != )
     auto it = m_players.find(tkn);
     if (it != m_players.end()) {
-      int x = j["params"]["x"];
-      int y = j["params"]["y"];
-      it->second.update_position(x, y);
-      m_players_db->update_last_position(it->second.id(), x, y);
+      it->second.update_from_json(j["params"]);
+      m_players_db->update_last_position(it->second.id(), it->second.x(), it->second.y());
       m_all_players.update_player(it->second);
       m_net_events.update_player(it->second);
     } else {

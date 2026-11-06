@@ -24,8 +24,8 @@ class GameServerMMOSpritePlayerMove {
       y: 0,
     };
     this.sprite = { x: 0, y: 0, d: 50, t: 0 };
-
-    this.directionOfMovement = DIRECTION_DOWN;
+    this.direction_of_movement = DIRECTION_DOWN;
+    this.animation = {};
   }
 
   set_player_position(data) {
@@ -36,6 +36,17 @@ class GameServerMMOSpritePlayerMove {
     // console.log("2", data)
     this.player.x = parseInt(data["x"], 10);
     this.player.y = parseInt(data["y"], 10);
+    if (data["dm"] !== undefined) {
+      this.direction_of_movement = parseInt(data["dm"], 10);
+      // console.log("dm", this.direction_of_movement);
+    }
+    if (data["a"] !== undefined) {
+      this.animation = data["a"];
+      if (this.animation["reset"] === true) {
+        console.log("point2");
+        this.reset();
+      }
+    }
   }
 
   set_target_position(data) {
@@ -44,6 +55,13 @@ class GameServerMMOSpritePlayerMove {
     }
     this.target.x = parseInt(data["x"], 10);
     this.target.y = parseInt(data["y"], 10);
+    if (data["dm"] !== undefined) {
+      this.direction_of_movement = parseInt(data["dm"], 10);
+      // console.log("dm", this.direction_of_movement);
+    }
+    if (data["a"] !== undefined) {
+      this.animation = data["a"];
+    }
   }
 
   calculate_direction(angle) {
@@ -88,6 +106,16 @@ class GameServerMMOSpritePlayerMove {
     )
   }
 
+  reset() {
+    // console.log("call reset")
+    this.sprite = {
+      x: 0,
+      y: 0,
+      d: 50,
+      t: 0
+    }
+  }
+
   update(minimal_distance, fn) {
     var dest_len = this.get_distance();
     // reset.
@@ -95,22 +123,31 @@ class GameServerMMOSpritePlayerMove {
       this.target.x = this.player.x;
       this.target.y = this.player.y;
       console.log("reset sprite. minimal_distance = ", minimal_distance, "; dest_len = ", dest_len)
-      this.sprite = {
-        x: 0,
-        y: 0,
-        d: 50,
-        t: 0
+      // console.log("point3")
+      this.reset();
+      if (fn) {
+        // console.log("reset");
+        this.direction_of_movement = DIRECTION_DOWN;
+        var angle = ANGLE_LEFT_DOWN + (ANGLE_RIGHT_DOWN - ANGLE_LEFT_DOWN) / 2;
+        fn(this, angle, {"reset": true});
       }
       return;
     }
 
     if (dest_len > minimal_distance) {
-      var angle = this.get_angle(dest_len);
-      this.directionOfMovement = this.calculate_direction(angle);
-      this.sprite.y = this.directionOfMovement * 50;
+      if (minimal_distance != 0) // if it isn't from network come
+      {
+        var angle = this.get_angle(dest_len);
+        this.direction_of_movement = this.calculate_direction(angle);
+      }
+      // console.log("this.direction_of_movement", this.direction_of_movement);
+      this.sprite.y = this.direction_of_movement * 50;
       this.update_animation_sprite_by_time();
+      if (this.animation["reset"] === true) {
+        this.reset();
+      }
       if (fn) {
-        fn(this, angle);
+        fn(this, angle, {});
       }
     }
   }
@@ -496,23 +533,31 @@ class GameServerMMORender {
           continue;
         }
         // const minimal_distance = 5;
-        this.__other_players[key].update(0, function (sprite, angle) {
+        this.__other_players[key].update(0, function (sprite, angle, animation) {
           // sprite.set_player_position({
           //   x: sprite.target.x,
           //   y: sprite.target.y,
           // })
-          var dx = (sprite.target.x - sprite.player.x) / 3;
-          var dy = (sprite.target.y - sprite.player.y) / 3;
+          var dx = (sprite.target.x - sprite.player.x) / 5;
+          var dy = (sprite.target.y - sprite.player.y) / 5;
 
-          if (dx < 1 && dy < 1) { // finished state
-            dx = sprite.target.x - sprite.player.x;
-            dy = sprite.target.y - sprite.player.y;
-          }
+          // if (dx < 1 && dy < 1) { // finished state
+          //   dx = sprite.target.x - sprite.player.x;
+          //   dy = sprite.target.y - sprite.player.y;
+          // }
 
           sprite.set_player_position({
             x: sprite.player.x + dx, // Math.sin(angle) * minimal_distance,
             y: sprite.player.y + dy, // Math.cos(angle) * minimal_distance,
           })
+
+          if (animation["reset"] === true) {
+            sprite.set_player_position({
+              x: sprite.target.x,
+              y: sprite.target.y,
+            })
+            sprite.reset();
+          }
         })
         var x = this.__other_players[key].player.x
         var y = this.__other_players[key].player.y
@@ -538,14 +583,16 @@ class GameServerMMORender {
       return;
     }
     const minimal_distance = 5;
-    this.render_frame_player.update(minimal_distance, function (sprite, angle) {
+    this.render_frame_player.update(minimal_distance, function (sprite, angle, animation) {
       sprite.set_player_position({
         x: sprite.player.x + Math.sin(angle) * minimal_distance,
         y: sprite.player.y + Math.cos(angle) * minimal_distance,
       })
-      gs_mmo_api.ws_change_player_position(
+      gs_mmo_api.ws_move_player(
         sprite.player.x,
         sprite.player.y,
+        sprite.direction_of_movement,
+        animation
       );
     });
   }

@@ -193,10 +193,14 @@ class Player:
         if self.move_mode == "absolute":
             # E.g. random walk in a small square around origin.
             return {"x": random.randint(-10, 10),
-                    "y": random.randint(-10, 10)}
+                    "y": random.randint(-10, 10),
+                    "dm": 0,
+                    "a": {} }
         # Default: delta
         return {"x": random.choice([-10, 0, 10]),
-                "y": random.choice([-10, 0, 10])}
+                "y": random.choice([-10, 0, 10]),
+                "dm": 0,
+                "a": {} }
 
     async def _mover(self) -> None:
         # Wait until we know who we are
@@ -210,7 +214,7 @@ class Player:
             while not self._stop.is_set():
                 move = self._next_move()
                 try:
-                    await self.rpc("change_player_position", move)
+                    await self.rpc("mv_player", move)
                 except websockets.ConnectionClosed:
                     break
                 await asyncio.sleep(self.move_interval)

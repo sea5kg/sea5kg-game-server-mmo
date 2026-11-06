@@ -2,7 +2,7 @@
 #define DATABASE_MAP_H
 
 #include <string>
-#include <json.hpp>
+#include "third_party/nlohmann/json.hpp"
 #include <sqlite3.h>
 #include "game_map_object.h"
 

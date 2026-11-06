@@ -6,7 +6,7 @@
 #include "game_map_generator.h"
 
 #include <string>
-#include <json.hpp>
+#include "third_party/nlohmann/json.hpp"
 
 class GameMapCache {
     public:

@@ -48,7 +48,7 @@
 
 #pragma once
 
-#include <json.hpp>
+#include "third_party/nlohmann/json.hpp"
 #include <vector>
 
 namespace gs_mmo {

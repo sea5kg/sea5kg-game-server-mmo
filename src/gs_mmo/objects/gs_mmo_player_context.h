@@ -62,7 +62,11 @@ public:
   void set_name(const std::string &);
   int x() const;
   int y() const;
+  int direction_of_movement() const;
+  void update_from_json(const nlohmann::json &a);
   void update_position(int x, int y);
+  void update_direction_of_movement(int dm);
+  void update_animation(const nlohmann::json &in);
   nlohmann::json to_json() const;
   void update_position_in_json(nlohmann::json &) const;
   long get_last_updated() const;
@@ -72,6 +76,8 @@ private:
   std::string m_name;
   int m_x;
   int m_y;
+  int m_direction_of_movement;
+  nlohmann::json m_animation;
   long m_last_updated;
 };
 
